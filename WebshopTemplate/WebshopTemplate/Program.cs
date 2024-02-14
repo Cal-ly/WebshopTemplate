@@ -137,11 +137,11 @@ static async Task EnsureRolesAndAdminUser(WebApplication app)
 
     if (await userManager.FindByEmailAsync(email) == null)
     {
-        Staff adminUser = new Staff
+        var adminUser = new IdentityUser
         {
             UserName = email,
             Email = email,
-            EmailConfirmed = true,
+            EmailConfirmed = true
         };
 
         await userManager.CreateAsync(adminUser, "Admin1234!");
