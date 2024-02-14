@@ -51,6 +51,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<IdentityRole>()
+    .AddRoleManager<RoleManager<IdentityRole>>()
+    .AddUserManager<UserManager<IdentityUser>>()
+    .AddSignInManager<SignInManager<IdentityUser>>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 AddAuthorizationPolicies(builder);
@@ -163,29 +166,28 @@ static async Task EnsureRolesAndAdminUser(WebApplication app)
         }
     }
 
-    string adminEmail = "admin@admin.com";
-
-    if (await userManager.FindByEmailAsync(adminEmail) == null)
+    if (await userManager.FindByEmailAsync("admin@admin.com") == null)
     {
         var adminUser = new Staff
         {
-            UserName = adminEmail,
-            Email = adminEmail,
+            UserName = "Admin",
+            Email = "admin@admin.com",
             EmailConfirmed = true,
             FirstName = "Admin",
             LastName = "Admin",
             Address = "Admin Street 1",
             City = "Admin City",
             PostalCode = "1234",
-            Country = "Admin Country",
+            Country = "Denmark",
             Phone = "12345678",
             EmploymentDate = DateTime.UtcNow,
             BasePay = 0
         };
 
-        await Task.WhenAll(
-            userManager.CreateAsync(adminUser, "Admin1234!"),
-            userManager.AddToRoleAsync(adminUser, "Admin")
-        );
+        var createResult = await userManager.CreateAsync(adminUser, "Admin1234!");
+        if (createResult.Succeeded)
+        {
+            await userManager.AddToRoleAsync(adminUser, "Admin");
+        }
     }
 }
