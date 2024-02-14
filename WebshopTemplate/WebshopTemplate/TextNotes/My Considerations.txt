@@ -1,0 +1,32 @@
+﻿My thoughts on implementing a Category for my Products class
+Deciding between using a string, an enum, or implementing a new class for product categories in system design largely depends on the complexity of the overall needs and how one foresee managing categories in the future.
+Each approach has its pros and cons, which I'll outline below, along with a recommendation for a scenario like a webshop where flexibility, scalability, and the ability to gather statistics are important.
+With this in mind future development and maintenance of the system should be considered when making a decision, as well as the potential for changes in the categorization needs of the webshop.
+
+--- String Approach
+Pros:
+  - Simplicity: Easy to implement and requires no additional classes or enums.
+  - Flexibility: Can easily add new categories without changing the codebase.
+Cons:
+  - Prone to typos and inconsistency: Different users might enter variations of the same category (e.g., "Electronics" vs. "Electronic").
+  - Harder to manage: No centralized place to see all categories or manage them.
+
+--- Enum Approach
+Pros:
+  - Type safety: Reduces the risk of typos and ensures consistency across product categories.
+  - Easy to use in switch statements or conditional logic within your code.
+Cons:
+  - Limited flexibility: Adding or changing categories requires code changes and redeployments, which can be cumbersome.
+  - Scalability: As your webshop grows, the enum can become large and unwieldy, and changing enums might involve database migrations if you store the enum values in the database.
+
+--- Class Approach (New `Category` Class)
+Pros:
+  - Flexibility and scalability: Allows for easy addition, removal, or modification of categories without code changes. You can manage categories directly in your database.
+  - Richness: Enables storing additional information about categories (e.g., description, parent category for nested categories).
+  - Enhanced statistics: Facilitates more complex queries and statistics, like sales per category, by leveraging Entity Framework's relationships and LINQ.
+Cons:
+  - Complexity: Requires more upfront design and implementation effort compared to the string or enum approaches.
+  - Overhead: Adds another layer of objects to manage in your system.
+
+Decision: Class Approach, given the requirements for flexibility, scalability, and the ability to generate detailed statistics, implementing a Category class would be the most advantageous approach.
+It provides a robust foundation for future growth and changes to a webshop's categorization needs.

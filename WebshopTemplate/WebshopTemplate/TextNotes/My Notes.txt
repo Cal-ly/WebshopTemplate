@@ -1,0 +1,71 @@
+﻿Implement the extended `Customer` class and the `RegisterViewModel` class. The `Customer` class should have the following properties:
+```csharp
+
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
+using WebshopTemplate.Models;
+using WebshopTemplate.ViewModels;
+
+namespace WebshopTemplate.Controllers
+{
+    public class AccountController : Controller
+    {
+        private readonly UserManager<Customer> _userManager;
+        private readonly SignInManager<Customer> _signInManager;
+
+        public AccountController(UserManager<Customer> userManager, SignInManager<Customer> signInManager)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+        }
+
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = new Customer
+                {
+                    UserName = model.Email,
+                    Email = model.Email,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Address = model.Address,
+                    City = model.City,
+                    PostalCode = model.PostalCode,
+                    Country = model.Country,
+                    Phone = model.Phone,
+                    CompanyName = model.CompanyName,
+                    CompanyAddress = model.CompanyAddress,
+                    CompanyCity = model.CompanyCity,
+                    CompanyPostalCode = model.CompanyPostalCode,
+                    CompanyCountry = model.CompanyCountry,
+                    CompanyPhone = model.CompanyPhone
+                };
+
+                var result = await _userManager.CreateAsync(user, model.Password);
+
+                if (result.Succeeded)
+                {
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return RedirectToAction("Index", "Home");
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+            }
+
+            return View(model);
+        }
+
+        // Other actions and methods
+    }
+}

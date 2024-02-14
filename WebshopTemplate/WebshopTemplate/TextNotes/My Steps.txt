@@ -1,0 +1,102 @@
+﻿
+
+First create a Git(hub) repository for your project. Then, clone the repository to your local machine. You can do this by running the following command in your terminal: bash
+Next, navigate to the directory where you want to store your project and run the following command: git clone
+Replace with the URL of your repository. This will create a new directory with the same name as your repository and download all of the files from the repository to your local machine.
+Now we have a working repository on our local machine. We can start adding files to it and pushing changes to the remote repository on GitHub.
+Open Visual Studio 2022 Enterprise and create a new project ASP.NET Core Web App (Razer Pages).
+Once you have created your project, navigate to the directory where your project is stored and run the following command in your terminal: git init
+This will initialize a new Git repository in your project directory. Now you can start adding files to your repository and committing changes.
+To add a file to your repository, run the following command in your terminal: git add
+Replace with the name of the file you want to add to your repository. This will stage the file for commit.
+To commit your changes, run the following command in your terminal: git commit -m "Your commit message here"
+Replace with a brief description of the changes you are committing. This will commit the changes to your local repository.
+To push your changes to the remote repository on GitHub, run the following command in your terminal: git push origin master
+This will push your changes to the remote repository on GitHub. You will be prompted to enter your GitHub username and password.
+That's it! You now have a working Git repository for your project, and you can start collaborating with others on GitHub. You can also use the GitHub website to manage your repository, create issues, and track changes to your project.
+
+Now open the solution with Visual Studio 2022 Enterprise and Open Tools => NuGet Package Manager => Package Manager Console and run the following command: dotnet tool install -g dotnet-aspnet-codegenerator (hit enter, then "-g" means globally for your solution)
+Open Tools => NuGet Package Manager => Manage NuGet Packages for Solution and install the following packages:
+
+Microsoft.EntityFrameworkCore.SqlServer
+Microsoft.EntityFrameworkCore.Tools
+Microsoft.EntityFrameworkCore.Design
+Microsoft.VisualStudio.Web.CodeGeneration.Design
+Microsoft.AspNetCore.Identity.EntityFrameworkCore
+Microsoft.AspNetCore.Identity.UI
+
+Next step is to right-click on your project and in the bottom of the menu click on Open in Terminal and run the following command:
+dotnet aspnet-codegenerator identity -dc YourProjectName.Data.ApplicationDbContext --files "Account.Register;Account.Login;Account.Logout"
+Replace YourProjectName with the name of your project. For this template it would look like
+dotnet aspnet-codegenerator identity -dc WebshopTemplate.Data.ApplicationDbContext --files "Account.Register;Account.Login;Account.Logout"
+
+This creates both the DBContext and your whole Account scafflod for you. Now you can run your project and register a new user and login with it. You can also add new roles and assign them to users.
+
+Open Program.cs and add
+
+	builder.Services.AddRazorPages ().AddRazorPagesOptions(options =>
+	{
+		options.Conventions.AuthorizeFolder("/Admin");
+		options.Conventions.AuthorizeFolder("/User");
+	});
+
+Just before the following statement:
+
+	app.MapControllerRoute(
+		name: "default",
+		pattern: "{controller=Home}/{action=Index}/{id?}");
+
+you need to add:
+
+	app.UseEndpoints(endpoints =>
+	{
+		endpoints.MapRazorPages();
+	});
+
+This will make sure that the user is authorized to access the Admin and User folders.
+Check in appsettings.json, that the DB connections string is correct. If you are using SQL Server, it should look like this:
+
+	"ConnectionStrings": {
+		"DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=YourProjectName;Trusted_Connection=True;MultipleActiveResultSets=true"
+	}
+
+Open the Package Manager Console and run the following command: Update-Database
+This will create the database for you. You can check it in the SQL Server Object Explorer.
+Also run the following command: add-migration addedIdendity
+This will add a lot of Asp.Net Identity framework to your project. You can check it in the Migrations folder.
+After that, run the following command again: Update-Database
+This will create tabels based on our migration and ASP.NET Core Identity is now set up and ready to use. You can now start further develop your application.
+Try run the compiler and add the following path (/Identity/Account/Register) to your localhost so it looks like: https://localhost:44300/Identity/Account/Login
+You should see the login page. You can register a new user and login with it. You can also add new roles and assign them to users.
+
+Right-click on your project => Add => New Scaffolded Item... This opens a menu. In the left corner select 'Identity'. Now you can see the possible pages to add to the project.
+You can add them all or just the ones you need. For this template, I added all of them. You can also add the layout and the data context. After you have added the pages, you can see them in the Pages folder.
+You can now run the project and see the new pages in action.
+
+//For adding a new role and assigning it to a user through SQL Server Object Explorer (A bit more advanced)
+You can also add a new role and assign it to a user. You can do this in the SQL Server Object Explorer. Open the database and find the AspNetRoles table. Right-click on it and select View Data.
+You can see the roles that are already in the table. You can add a new role by clicking on the Add New Row button. You can also assign a role to a user.
+You can do this by finding the AspNetUserRoles table. Right-click on it and select View Data.
+You can see the users and their roles. You can add a new row by clicking on the Add New Row button. You can also remove a role from a user by deleting the row.
+
+//For adding a new role and assigning it to a user through the code
+You can also add a new role and assign it to a user through the code. You can do this by adding the following code to your Program.cs file:
+
+    using(var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var logger = services.GetRequiredService<ILogger<Program>>();
+
+        var roles = new[] { "Admin", "Manager", "SuperMember", "Member" };
+
+        foreach (var role in roles)
+        {
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole(role));
+            }
+        }
+    }

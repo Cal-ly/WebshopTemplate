@@ -1,0 +1,3 @@
+﻿
+
+Bidirectional relationships and Index' / nice but slowing down, so when to use them?
