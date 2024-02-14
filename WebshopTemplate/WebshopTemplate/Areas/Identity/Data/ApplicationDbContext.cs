@@ -71,5 +71,6 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             .HasIndex(p => p.CategoryId); // Index on CategoryId in Product
         #endregion
 
+
     }
 }

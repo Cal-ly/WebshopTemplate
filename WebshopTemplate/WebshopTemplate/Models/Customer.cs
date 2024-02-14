@@ -5,13 +5,13 @@ namespace WebshopTemplate.Models
 {
     public class Customer : IdentityUser
     {
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
-        public string City { get; set; } = string.Empty;
-        public string PostalCode { get; set; } = string.Empty;
-        public string Country { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
+        public string? FirstName { get; set; } = string.Empty;
+        public string? LastName { get; set; } = string.Empty;
+        public string? Address { get; set; } = string.Empty;
+        public string? City { get; set; } = string.Empty;
+        public string? PostalCode { get; set; } = string.Empty;
+        public string? Country { get; set; } = string.Empty;
+        public string? Phone { get; set; } = string.Empty;
 
         /// <summary>
         /// List of orders placed by the customer.
@@ -30,10 +30,10 @@ namespace WebshopTemplate.Models
         [ForeignKey("CompanyId")]
         public virtual Company? RepresentingCompany { get; set; }
 
-        public string Shopnotes { get; set; } = string.Empty;
+        public string? Shopnotes { get; set; } = string.Empty;
 
         // Calculated properties
-        public string FullName => $"{FirstName} {LastName}";
-        public string FullAddress => $"{Address}, {PostalCode} {City}, {Country}";
+        public string? FullName => $"{FirstName} {LastName}";
+        public string? FullAddress => $"{Address}, {PostalCode} {City}, {Country}";
     }
 }

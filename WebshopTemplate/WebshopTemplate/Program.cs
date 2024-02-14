@@ -1,9 +1,37 @@
 global using Microsoft.EntityFrameworkCore;
+global using Microsoft.AspNetCore.Authentication;
+global using Microsoft.AspNetCore.Authentication.Cookies;
+global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Builder;
+global using Microsoft.AspNetCore.Hosting;
+global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.AspNetCore.Mvc.RazorPages;
+global using Microsoft.EntityFrameworkCore.Infrastructure;
+global using Microsoft.EntityFrameworkCore.Migrations;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Hosting;
+global using Microsoft.Extensions.Logging;
+global using System;
+global using System.Collections.Generic;
+global using System.ComponentModel.DataAnnotations;
 global using System.ComponentModel.DataAnnotations.Schema;
+global using System.Diagnostics;
+global using System.Linq;
+global using System.Security.Claims;
+global using System.Threading.Tasks;
+
 using WebshopTemplate.Data;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+builder.Services.AddRazorPages();
+
 var connectionString = builder.Configuration.GetConnectionString("ApplicationDbContextConnection") ?? throw new InvalidOperationException("Connection string 'ApplicationDbContextConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
@@ -12,10 +40,7 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-
-builder.Services.AddRazorPages();
+//builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 var app = builder.Build();
 
@@ -34,13 +59,8 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-//app.UseEndpoints(endpoints => endpoints.MapRazorPages()); // Map Razor Pages to the endpoints.. This is the default route for Razor Pages, so it is not necessary to add a route for Razor Pages.
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
 app.MapRazorPages();
+app.Run();
 
 /// <summary>
 /// This scope is used to create roles if they do not exist.
@@ -69,6 +89,31 @@ using (var scope = app.Services.CreateScope())
             await roleManager.CreateAsync(new IdentityRole(role));
         }
     }
+
+    if (app.Environment.IsDevelopment())
+    {
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
+    }
+    else
+    {
+        context.Database.Migrate();
+    }
+
+    string email = "admin@admin.com";
+    if (await userManager.FindByEmailAsync(email) == null)
+    {
+        var adminUser = new IdentityUser
+        {
+            UserName = email,
+            Email = email,
+            EmailConfirmed = true,
+        };
+
+        await userManager.CreateAsync(adminUser, "Admin1234!");
+
+        await userManager.AddToRoleAsync(adminUser, "Admin");
+    }
 }
 
 /// <summary>
@@ -81,26 +126,24 @@ using (var scope = app.Services.CreateScope())
 /// Hardcoding the admin user's email and password is not secure, and should be avoided in a production environment.
 /// However in development, this is a quick and easy way to ensure that the admin user exists in the database.
 /// </comment>
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+//using (var scope = app.Services.CreateScope())
+//{
+//    var services = scope.ServiceProvider;
+//    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
 
-    string email = "admin@admin.com";
+//    string email = "admin@admin.com";
 
-    if (await userManager.FindByEmailAsync(email) == null)
-    {
-        var adminUser = new IdentityUser
-        {
-            UserName = email,
-            Email = email,
-            EmailConfirmed = true
-        };
+//    if (await userManager.FindByEmailAsync(email) == null)
+//    {
+//        var adminUser = new IdentityUser
+//        {
+//            UserName = email,
+//            Email = email,
+//            EmailConfirmed = true,
+//        };
 
-        await userManager.CreateAsync(adminUser, "Admin1234!");
+//        await userManager.CreateAsync(adminUser, "Admin1234!");
 
-        await userManager.AddToRoleAsync(adminUser, "Admin");
-    }
-}
-
-app.Run();
+//        await userManager.AddToRoleAsync(adminUser, "Admin");
+//    }
+//}
