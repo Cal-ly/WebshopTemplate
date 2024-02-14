@@ -12,9 +12,24 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
     }
 
+    /// <summary>
+    /// Entity Framework will handle the inheritance hierarchy by default
+    /// using the Table-Per-Hierarchy (TPH) approach, where a single table
+    /// will contain users of all types, distinguished by a discriminator column.
+    /// </summary>
+    public DbSet<Customer> Customers { get; set; }
+    public DbSet<Staff> StaffMembers { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        #region Relationship Staff - Order
+        modelBuilder.Entity<Staff>()
+            .HasMany(s => s.Orders) // Staff has many Orders
+            .WithOne(o => o.Staff) // Each Order has one Staff
+            .HasForeignKey(o => o.StaffId); // ForeignKey in Order pointing to Staff
+        #endregion
 
         #region Relationship Customer - Company
         modelBuilder.Entity<Customer>()
@@ -32,7 +47,6 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
         modelBuilder.Entity<Customer>()
             .Property(c => c.CompanyId) // CompanyId in Customer
             .ValueGeneratedNever(); // Value is never generated
-
         #endregion
 
         #region Relationship Order - Customer
@@ -70,7 +84,6 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
         modelBuilder.Entity<Product>()
             .HasIndex(p => p.CategoryId); // Index on CategoryId in Product
         #endregion
-
 
     }
 }

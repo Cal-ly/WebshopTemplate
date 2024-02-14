@@ -1,4 +1,4 @@
-﻿My questions in bullet form>
+﻿My questions in bullet form:
 
 - [x] Bidirectional relationships are nice / how to use it properly?
 - [x] Index in DB can optimize and slow down at the same time / how to use it properly?
