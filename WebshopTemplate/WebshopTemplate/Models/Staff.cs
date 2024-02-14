@@ -15,8 +15,8 @@
         public DateTime? EmploymentDate { get; set; } = DateTime.Now;
         public DateTime? TerminationDate { get; set; } = null;
         public decimal BasePay { get; set; } = 0;
-        public string? Notes { get; set; } = string.Empty;
-        public string? ImageUrl { get; set; } = string.Empty;
+        public virtual string? Notes { get; set; } = string.Empty;
+        public virtual string? ImageUrl { get; set; } = string.Empty;
 
         // Relation to Orders they've worked on. It can be empty, but not null.
         public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
