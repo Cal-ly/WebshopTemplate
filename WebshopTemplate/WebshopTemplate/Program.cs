@@ -58,8 +58,6 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
-builder.Services.AddAuthorizationCore();
-
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -67,15 +65,17 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LogoutPath = "/Identity/Account/Logout";
         options.AccessDeniedPath = "/Identity/Account/AccessDenied";
     });
-builder.Services.AddControllersWithViews();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
@@ -118,7 +118,6 @@ static async Task EnsureRolesAndAdminUser(WebApplication app)
     var context = services.GetRequiredService<ApplicationDbContext>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
-    var signInManager = services.GetRequiredService<SignInManager<IdentityUser>>();
     var roleHandler = services.GetRequiredService<IAuthorizationHandler>();
     var emailSender = services.GetRequiredService<IEmailSender>(); // This is not used in this snippet, but it's here for completeness
     var logger = services.GetRequiredService<ILogger<Program>>();
