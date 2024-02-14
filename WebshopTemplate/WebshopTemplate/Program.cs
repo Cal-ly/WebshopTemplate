@@ -163,14 +163,14 @@ static async Task EnsureRolesAndAdminUser(WebApplication app)
         }
     }
 
-    string email = "admin@admin.com";
+    string adminEmail = "admin@admin.com";
 
-    if (await userManager.FindByEmailAsync(email) == null)
+    if (await userManager.FindByEmailAsync(adminEmail) == null)
     {
         var adminUser = new Staff
         {
-            UserName = email,
-            Email = email,
+            UserName = adminEmail,
+            Email = adminEmail,
             EmailConfirmed = true,
             FirstName = "Admin",
             LastName = "Admin",
@@ -179,12 +179,13 @@ static async Task EnsureRolesAndAdminUser(WebApplication app)
             PostalCode = "1234",
             Country = "Admin Country",
             Phone = "12345678",
-            EmploymentDate = DateTime.Now,
+            EmploymentDate = DateTime.UtcNow,
             BasePay = 0
         };
 
-        await userManager.CreateAsync(adminUser, "Admin1234!");
-
-        await userManager.AddToRoleAsync(adminUser, "Admin");
+        await Task.WhenAll(
+            userManager.CreateAsync(adminUser, "Admin1234!"),
+            userManager.AddToRoleAsync(adminUser, "Admin")
+        );
     }
 }
