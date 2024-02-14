@@ -20,12 +20,11 @@ global using System.ComponentModel.DataAnnotations;
 global using System.ComponentModel.DataAnnotations.Schema;
 global using System.Diagnostics;
 global using System.Linq;
-global using System.Security.Claims;
 global using System.Threading.Tasks;
 global using WebshopTemplate.Models;
 global using WebshopTemplate.Data;
-
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+global using Microsoft.VisualStudio.Web.CodeGenerators;
+global using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +34,42 @@ builder.Services.AddRazorPages();
 var connectionString = builder.Configuration.GetConnectionString("ApplicationDbContextConnection") ?? throw new InvalidOperationException("Connection string 'ApplicationDbContextConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+
+builder.Services.AddIdentity<Staff, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddIdentityCore<Staff>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("RequireManagerRole", policy => policy.RequireRole("Admin", "Manager"));
+    options.AddPolicy("RequireSuperMemberRole", policy => policy.RequireRole("Admin", "Manager", "SuperMember"));
+    options.AddPolicy("RequireMemberRole", policy => policy.RequireRole("Admin", "Manager", "SuperMember", "Member"));
+});
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.Name = "WebshopTemplateCookie";
+    options.LoginPath = "/Identity/Account/Login";
+    options.LogoutPath = "/Identity/Account/Logout";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+    options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
+    options.SlidingExpiration = true;
+});
+
+builder.Services.AddAuthorizationCore();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Identity/Account/Login";
+        options.LogoutPath = "/Identity/Account/Logout";
+        options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    });
+builder.Services.AddControllersWithViews();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -48,21 +83,20 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseRouting();
-
-app.UseAuthorization();
-app.UseAuthentication();
-
-app.MapRazorPages();
-app.Run();
-
+// EnsureDatabaseIntegrity and EnsureRolesAndAdminUser are moved to separate async methods
+await EnsureDatabaseIntegrity(app);
 // Roles creation and admin user creation are moved to a separate async method
 await EnsureRolesAndAdminUser(app);
 
-async Task EnsureRolesAndAdminUser(WebApplication app)
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapRazorPages();
+app.Run();
+
+static async Task EnsureDatabaseIntegrity(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
@@ -77,9 +111,18 @@ async Task EnsureRolesAndAdminUser(WebApplication app)
     {
         context.Database.Migrate();
     }
+}
 
-    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+static async Task EnsureRolesAndAdminUser(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApplicationDbContext>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+    var signInManager = services.GetRequiredService<SignInManager<IdentityUser>>();
+    var roleHandler = services.GetRequiredService<IAuthorizationHandler>();
+    var emailSender = services.GetRequiredService<IEmailSender>(); // This is not used in this snippet, but it's here for completeness
     var logger = services.GetRequiredService<ILogger<Program>>();
 
     var roles = new[] { "Admin", "Manager", "SuperMember", "Member" };
@@ -96,7 +139,7 @@ async Task EnsureRolesAndAdminUser(WebApplication app)
 
     if (await userManager.FindByEmailAsync(email) == null)
     {
-        var adminUser = new Staff
+        Staff adminUser = new Staff
         {
             UserName = email,
             Email = email,
