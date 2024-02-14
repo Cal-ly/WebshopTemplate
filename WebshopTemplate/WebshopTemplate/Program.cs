@@ -21,10 +21,24 @@ global using System.ComponentModel.DataAnnotations.Schema;
 global using System.Diagnostics;
 global using System.Linq;
 global using System.Threading.Tasks;
+global using System.Security.AccessControl;
+global using System.Security.Claims;
+global using System.Security.Principal;
+global using System.Security.Cryptography;
+global using System.Security.Cryptography.X509Certificates;
+global using System.Security.Cryptography.Xml;
+global using System.Security.Authentication;
+global using System.Security.Cryptography.Pkcs;
+global using System.Security.Policy;
 global using WebshopTemplate.Models;
 global using WebshopTemplate.Data;
+global using WebshopTemplate.Areas.Identity;
+global using WebshopTemplate.Pages;
 global using Microsoft.VisualStudio.Web.CodeGenerators;
 global using Microsoft.AspNetCore.Identity.UI.Services;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,7 +54,6 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 AddAuthorizationPolicies(builder);
-
 ConfigureApplicationCookie(builder);
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -69,11 +82,13 @@ else
 await EnsureDatabaseIntegrity(app);
 await EnsureRolesAndAdminUser(app);
 
+
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-app.UseAuthentication();
 app.UseAuthorization();
+app.UseAuthentication();
 app.MapRazorPages();
 app.Run();
 
@@ -85,6 +100,7 @@ static void AddAuthorizationPolicies(WebApplicationBuilder builder)
         options.AddPolicy("RequireManagerRole", policy => policy.RequireRole("Admin", "Manager"));
         options.AddPolicy("RequireSuperMemberRole", policy => policy.RequireRole("Admin", "Manager", "SuperMember"));
         options.AddPolicy("RequireMemberRole", policy => policy.RequireRole("Admin", "Manager", "SuperMember", "Member"));
+        options.AddPolicy("RequireAuthenticatedUser", policy => policy.RequireAuthenticatedUser());
     });
 }
 
@@ -100,74 +116,15 @@ static void ConfigureApplicationCookie(WebApplicationBuilder builder)
         options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
         options.SlidingExpiration = true;
     });
-}
-// Add services to the container.
-builder.Services.AddRazorPages();
 
-var connectionString = builder.Configuration.GetConnectionString("ApplicationDbContextConnection") ?? throw new InvalidOperationException("Connection string 'ApplicationDbContextConnection' not found.");
-
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
-
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
-
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("RequireManagerRole", policy => policy.RequireRole("Admin", "Manager"));
-    options.AddPolicy("RequireSuperMemberRole", policy => policy.RequireRole("Admin", "Manager", "SuperMember"));
-    options.AddPolicy("RequireMemberRole", policy => policy.RequireRole("Admin", "Manager", "SuperMember", "Member"));
-});
-
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.Cookie.Name = "WebshopTemplateCookie";
-    options.LoginPath = "/Identity/Account/Login";
-    options.LogoutPath = "/Identity/Account/Logout";
-    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-    options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
-    options.SlidingExpiration = true;
-});
-
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
+    builder.Services.Configure<CookiePolicyOptions>(options =>
     {
-        options.LoginPath = "/Identity/Account/Login";
-        options.LogoutPath = "/Identity/Account/Logout";
-        options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+        options.CheckConsentNeeded = context => true;
+        options.MinimumSameSitePolicy = SameSiteMode.None;
     });
-
-builder.Services.AddControllersWithViews();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
-else
-{
-    app.UseExceptionHandler("/Error");
-    app.UseHsts();
 }
 
-// EnsureDatabaseIntegrity and EnsureRolesAndAdminUser are moved to separate async methods
-await EnsureDatabaseIntegrity(app);
-// Roles creation and admin user creation are moved to a separate async method
-await EnsureRolesAndAdminUser(app);
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapRazorPages();
-app.Run();
-
-static async Task EnsureDatabaseIntegrity(WebApplication app)
+static Task EnsureDatabaseIntegrity(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
@@ -182,6 +139,8 @@ static async Task EnsureDatabaseIntegrity(WebApplication app)
     {
         context.Database.Migrate();
     }
+
+    return Task.CompletedTask;
 }
 
 static async Task EnsureRolesAndAdminUser(WebApplication app)
@@ -189,17 +148,16 @@ static async Task EnsureRolesAndAdminUser(WebApplication app)
     using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ApplicationDbContext>();
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
-    var roleHandler = services.GetRequiredService<IAuthorizationHandler>();
-    var emailSender = services.GetRequiredService<IEmailSender>(); // This is not used in this snippet, but it's here for completeness
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var logger = services.GetRequiredService<ILogger<Program>>();
 
-    var roles = new[] { "Admin", "Manager", "SuperMember", "Member" };
+    string[] roles = ["Admin", "Manager", "SuperMember", "Member"];
 
     foreach (var role in roles)
     {
-        if (!await roleManager.RoleExistsAsync(role))
+        var roleExists = await roleManager.RoleExistsAsync(role);
+        if (!roleExists)
         {
             await roleManager.CreateAsync(new IdentityRole(role));
         }

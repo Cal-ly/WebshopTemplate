@@ -17,6 +17,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     /// using the Table-Per-Hierarchy (TPH) approach, where a single table
     /// will contain users of all types, distinguished by a discriminator column.
     /// </summary>
+    public DbSet<IdentityUser> Users { get; set; }
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Staff> StaffMembers { get; set; }
 
