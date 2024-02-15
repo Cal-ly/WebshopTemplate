@@ -8,6 +8,7 @@ global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Mvc.RazorPages;
+global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Infrastructure;
 global using Microsoft.EntityFrameworkCore.Migrations;
 global using Microsoft.Extensions.Configuration;
@@ -20,7 +21,7 @@ global using System.ComponentModel.DataAnnotations;
 global using System.ComponentModel.DataAnnotations.Schema;
 global using System.Diagnostics;
 global using System.Linq;
-global using System.Threading.Tasks;
+//global using System.Threading.Tasks;
 global using System.Security.AccessControl;
 global using System.Security.Claims;
 global using System.Security.Principal;
@@ -49,25 +50,21 @@ var connectionString = builder.Configuration.GetConnectionString("ApplicationDbC
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddRoles<IdentityRole>()
-    .AddRoleManager<RoleManager<IdentityRole>>()
-    .AddUserManager<UserManager<IdentityUser>>()
-    .AddSignInManager<SignInManager<IdentityUser>>()
+//builder.Services.AddDefaultIdentity<IdentityUser>()
+//    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 AddAuthorizationPolicies(builder);
 ConfigureApplicationCookie(builder);
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Identity/Account/Login";
-        options.LogoutPath = "/Identity/Account/Logout";
-        options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-    });
-
-builder.Services.AddControllersWithViews();
+//builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+//    .AddCookie(options =>
+//    {
+//        options.LoginPath = "/Identity/Account/Login";
+//        options.LogoutPath = "/Identity/Account/Login";
+//    });
 
 var app = builder.Build();
 
@@ -82,10 +79,8 @@ else
     app.UseHsts();
 }
 
-await EnsureDatabaseIntegrity(app);
-await EnsureRolesAndAdminUser(app);
-
-
+EnsureDatabaseIntegrity(app).Wait();
+EnsureRolesAndAdminUser(app).Wait();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -114,7 +109,7 @@ static void ConfigureApplicationCookie(WebApplicationBuilder builder)
         options.Cookie.Name = "WebshopTemplateCookie";
         options.LoginPath = "/Identity/Account/Login";
         options.LogoutPath = "/Identity/Account/Logout";
-        options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+        //options.AccessDeniedPath = "/Identity/Account/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
         options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
         options.SlidingExpiration = true;
@@ -140,11 +135,12 @@ static Task EnsureDatabaseIntegrity(WebApplication app)
     }
     else
     {
-        context.Database.Migrate();
+        context.Database.MigrateAsync();
     }
 
     return Task.CompletedTask;
 }
+
 
 static async Task EnsureRolesAndAdminUser(WebApplication app)
 {
@@ -153,20 +149,26 @@ static async Task EnsureRolesAndAdminUser(WebApplication app)
     var context = services.GetRequiredService<ApplicationDbContext>();
     var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var roleStore = new RoleStore<IdentityRole>(context);
+
     var logger = services.GetRequiredService<ILogger<Program>>();
 
-    string[] roles = ["Admin", "Manager", "SuperMember", "Member"];
+    string[] roleNames = { "Admin", "User", "Manager" };
+    IdentityResult roleResult;
 
-    foreach (var role in roles)
+    foreach (var roleName in roleNames)
     {
-        var roleExists = await roleManager.RoleExistsAsync(role);
-        if (!roleExists)
+        var roleExist = await roleManager.RoleExistsAsync(roleName);
+        if (!roleExist)
         {
-            await roleManager.CreateAsync(new IdentityRole(role));
+            //create the roles and seed them to the database
+            roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
         }
     }
 
-    if (await userManager.FindByEmailAsync("admin@admin.com") == null)
+    IdentityUser? resultUser = await userManager.FindByEmailAsync("admin@admin.com"); // Find the admin user
+
+    if (resultUser == null)
     {
         var adminUser = new Staff
         {
@@ -188,6 +190,11 @@ static async Task EnsureRolesAndAdminUser(WebApplication app)
         if (createResult.Succeeded)
         {
             await userManager.AddToRoleAsync(adminUser, "Admin");
+            //await userManager.AddToRoleAsync(adminUser, "Manager");
+            //await userManager.AddToRoleAsync(adminUser, "SuperMember");
+            //await userManager.AddToRoleAsync(adminUser, "Member");
+            // await userManager.AddClaimAsync(adminUser, new Claim(ClaimTypes.Role, "Admin"));
+            // await context.SaveChangesAsync(); // Save changes to the database
         }
     }
 }
