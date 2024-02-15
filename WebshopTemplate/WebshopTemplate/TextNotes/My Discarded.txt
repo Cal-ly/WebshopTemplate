@@ -1,0 +1,70 @@
+﻿From Program.cs
+
+static async Task EnsureRolesAndAdminUser(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    await DbInitializer.Initialize(context, userManager, roleManager);
+
+    //using var scope = app.Services.CreateScope();
+    //var services = scope.ServiceProvider;
+    //var context = services.GetRequiredService<ApplicationDbContext>();
+    //var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+    //var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    //var roleStore = new RoleStore<IdentityRole>(context);
+
+    //string[] roleNames = ["Admin", "Manager", "SuperMember", "Member"];
+    //IdentityResult roleResult;
+
+    //foreach (var roleName in roleNames)
+    //{
+    //    var roleExist = await roleManager.RoleExistsAsync(roleName);
+    //    if (!roleExist)
+    //    {
+    //        //create the roles and seed them to the database
+    //        roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
+    //    }
+    //}
+
+    //IdentityUser? resultUser = await userManager.FindByEmailAsync("admin@admin.com"); // Find the admin user
+
+    //if (resultUser == null)
+    //{
+    //    var adminUser = new IdentityUser
+    //    {
+    //        UserName = "Admin",
+    //        Email = "admin@admin.com",
+    //        EmailConfirmed = true,
+    //        //FirstName = "Admin",
+    //        //LastName = "Admin",
+    //        //Address = "Admin Street 1",
+    //        //City = "Admin City",
+    //        //PostalCode = "1234",
+    //        //Country = "Denmark",
+    //        //Phone = "12345678",
+    //        //EmploymentDate = DateTime.UtcNow,
+    //        //BasePay = 0
+    //    };
+
+    //    var createResult = await userManager.CreateAsync(adminUser, "Admin1234!");
+    //    if (createResult.Succeeded)
+    //    {
+    //        await userManager.AddToRoleAsync(adminUser, "Admin");
+    //        // await userManager.AddClaimAsync(adminUser, new Claim(ClaimTypes.Role, "Admin"));
+    //        // await context.SaveChangesAsync(); // Save changes to the database
+    //    }
+    //}
+}
+
+//builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+//    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+//builder.Services.AddIdentity<Staff, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+//    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+//builder.Services.AddIdentity<Customer, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+//    .AddEntityFrameworkStores<ApplicationDbContext>();

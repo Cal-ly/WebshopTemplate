@@ -1,4 +1,3 @@
-global using Microsoft.EntityFrameworkCore;
 global using Microsoft.AspNetCore.Authentication;
 global using Microsoft.AspNetCore.Authentication.Cookies;
 global using Microsoft.AspNetCore.Authorization;
@@ -6,11 +5,15 @@ global using Microsoft.AspNetCore.Builder;
 global using Microsoft.AspNetCore.Hosting;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+global using Microsoft.AspNetCore.Identity.UI.Services;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Mvc.RazorPages;
-global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Infrastructure;
 global using Microsoft.EntityFrameworkCore.Migrations;
+global using Microsoft.EntityFrameworkCore.Storage;
+global using Microsoft.EntityFrameworkCore.Design;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
@@ -21,50 +24,25 @@ global using System.ComponentModel.DataAnnotations;
 global using System.ComponentModel.DataAnnotations.Schema;
 global using System.Diagnostics;
 global using System.Linq;
-//global using System.Threading.Tasks;
-global using System.Security.AccessControl;
-global using System.Security.Claims;
-global using System.Security.Principal;
-global using System.Security.Cryptography;
-global using System.Security.Cryptography.X509Certificates;
-global using System.Security.Cryptography.Xml;
-global using System.Security.Authentication;
-global using System.Security.Cryptography.Pkcs;
-global using System.Security.Policy;
-global using WebshopTemplate.Models;
+global using System.Threading.Tasks;
 global using WebshopTemplate.Data;
-global using WebshopTemplate.Areas.Identity;
-global using WebshopTemplate.Pages;
-global using Microsoft.VisualStudio.Web.CodeGenerators;
-global using Microsoft.AspNetCore.Identity.UI.Services;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+global using WebshopTemplate.Models;
+global using WebshopTemplate.Areas.Identity.Data.Seeddata;
+global using WebshopTemplate.Areas.Identity.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var connectionString = builder.Configuration.GetConnectionString("ApplicationDbContextConnection") ?? throw new InvalidOperationException("Connection string 'ApplicationDbContextConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
-//builder.Services.AddDefaultIdentity<IdentityUser>()
-//    .AddEntityFrameworkStores<ApplicationDbContext>();
-
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
-
+AddIdentityServices(builder);
 AddAuthorizationPolicies(builder);
 ConfigureApplicationCookie(builder);
-
-//builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-//    .AddCookie(options =>
-//    {
-//        options.LoginPath = "/Identity/Account/Login";
-//        options.LogoutPath = "/Identity/Account/Login";
-//    });
 
 var app = builder.Build();
 
@@ -90,6 +68,12 @@ app.UseAuthentication();
 app.MapRazorPages();
 app.Run();
 
+static void AddIdentityServices(WebApplicationBuilder builder)
+{
+    builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+        .AddRoles<IdentityRole>()
+        .AddEntityFrameworkStores<ApplicationDbContext>();
+}
 static void AddAuthorizationPolicies(WebApplicationBuilder builder)
 {
     builder.Services.AddAuthorization(options =>
@@ -101,7 +85,6 @@ static void AddAuthorizationPolicies(WebApplicationBuilder builder)
         options.AddPolicy("RequireAuthenticatedUser", policy => policy.RequireAuthenticatedUser());
     });
 }
-
 static void ConfigureApplicationCookie(WebApplicationBuilder builder)
 {
     builder.Services.ConfigureApplicationCookie(options =>
@@ -109,7 +92,6 @@ static void ConfigureApplicationCookie(WebApplicationBuilder builder)
         options.Cookie.Name = "WebshopTemplateCookie";
         options.LoginPath = "/Identity/Account/Login";
         options.LogoutPath = "/Identity/Account/Logout";
-        //options.AccessDeniedPath = "/Identity/Account/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
         options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
         options.SlidingExpiration = true;
@@ -119,9 +101,10 @@ static void ConfigureApplicationCookie(WebApplicationBuilder builder)
     {
         options.CheckConsentNeeded = context => true;
         options.MinimumSameSitePolicy = SameSiteMode.None;
+        options.ConsentCookie.Name = "WebshopTemplateConsentCookie";
+        options.ConsentCookie.Expiration = TimeSpan.FromDays(365);
     });
 }
-
 static Task EnsureDatabaseIntegrity(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
@@ -130,18 +113,16 @@ static Task EnsureDatabaseIntegrity(WebApplication app)
 
     if (app.Environment.IsDevelopment())
     {
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
+        app.UseDeveloperExceptionPage();
     }
     else
     {
-        context.Database.MigrateAsync();
+        app.UseExceptionHandler("/Error");
+        app.UseHsts();
     }
 
     return Task.CompletedTask;
 }
-
-
 static async Task EnsureRolesAndAdminUser(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
@@ -149,52 +130,6 @@ static async Task EnsureRolesAndAdminUser(WebApplication app)
     var context = services.GetRequiredService<ApplicationDbContext>();
     var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    var roleStore = new RoleStore<IdentityRole>(context);
-
     var logger = services.GetRequiredService<ILogger<Program>>();
-
-    string[] roleNames = { "Admin", "User", "Manager" };
-    IdentityResult roleResult;
-
-    foreach (var roleName in roleNames)
-    {
-        var roleExist = await roleManager.RoleExistsAsync(roleName);
-        if (!roleExist)
-        {
-            //create the roles and seed them to the database
-            roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
-        }
-    }
-
-    IdentityUser? resultUser = await userManager.FindByEmailAsync("admin@admin.com"); // Find the admin user
-
-    if (resultUser == null)
-    {
-        var adminUser = new Staff
-        {
-            UserName = "Admin",
-            Email = "admin@admin.com",
-            EmailConfirmed = true,
-            FirstName = "Admin",
-            LastName = "Admin",
-            Address = "Admin Street 1",
-            City = "Admin City",
-            PostalCode = "1234",
-            Country = "Denmark",
-            Phone = "12345678",
-            EmploymentDate = DateTime.UtcNow,
-            BasePay = 0
-        };
-
-        var createResult = await userManager.CreateAsync(adminUser, "Admin1234!");
-        if (createResult.Succeeded)
-        {
-            await userManager.AddToRoleAsync(adminUser, "Admin");
-            //await userManager.AddToRoleAsync(adminUser, "Manager");
-            //await userManager.AddToRoleAsync(adminUser, "SuperMember");
-            //await userManager.AddToRoleAsync(adminUser, "Member");
-            // await userManager.AddClaimAsync(adminUser, new Claim(ClaimTypes.Role, "Admin"));
-            // await context.SaveChangesAsync(); // Save changes to the database
-        }
-    }
+    await DbInitializer.Initialize(context, userManager, roleManager);
 }
