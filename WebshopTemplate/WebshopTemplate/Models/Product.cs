@@ -2,15 +2,16 @@
 {
     public class Product
     {
-        public int Id { get; set; }
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public string Id { get; set; } = null!;
         public string Name { get; set; } = string.Empty;
         public string Image { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-        public decimal PriceTotal { get; set; }
-        public int Quantity { get; set; }
+        public decimal Price { get; set; } = 0;
+        public decimal PriceTotal { get; set; } = 0;
+        public int Quantity { get; set; } = 0;
 
-        public int CategoryId { get; set; }
+        public string CategoryId { get; set; } = null!;
         [ForeignKey("CategoryId")]
         public Category Category { get; set; } = null!;
 

@@ -24,7 +24,7 @@ namespace WebshopTemplate.Models
         public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
         // Foreign key for Company
-        public int? CompanyId { get; set; }
+        public string? CompanyId { get; set; }
 
         // Navigation property for Company
         [ForeignKey("CompanyId")]

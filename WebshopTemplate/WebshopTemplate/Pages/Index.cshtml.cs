@@ -17,7 +17,6 @@ namespace WebshopTemplate.Pages
 
         public void OnGet()
         {
-
         }
     }
 }

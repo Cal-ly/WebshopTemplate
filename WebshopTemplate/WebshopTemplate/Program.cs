@@ -29,19 +29,57 @@ global using WebshopTemplate.Data;
 global using WebshopTemplate.Models;
 global using WebshopTemplate.Areas.Identity.Data;
 global using WebshopTemplate.Areas.Identity.Data.Seeddata;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using Microsoft.Extensions.Options;
 
 namespace WebshopTemplate;
-public class Program
+public static class Program
 {
-    private static async Task Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
         var connectionString = builder.Configuration.GetConnectionString("ApplicationDbContextConnection") ?? throw new InvalidOperationException("Connection string 'ApplicationDbContextConnection' not found.");
 
         builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
-        builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+        builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+        {
+            options.SignIn.RequireConfirmedAccount = false;
+            options.Password.RequireDigit = false;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequiredLength = 4;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireLowercase = false;
+        })
             .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>();
+
+        builder.Services.AddIdentityCore<Customer>(options =>
+        {
+            options.SignIn.RequireConfirmedAccount = false;
+            options.Password.RequireDigit = false;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequiredLength = 4;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireLowercase = false;
+        })
+            .AddRoles<IdentityRole>()
+            .AddDefaultUI()
+            .AddDefaultTokenProviders()
+            .AddSignInManager<SignInManager<Customer>>()
+            .AddEntityFrameworkStores<ApplicationDbContext>();
+
+        builder.Services.AddIdentityCore<Staff>(options =>
+        {
+            options.SignIn.RequireConfirmedAccount = false;
+            options.Password.RequireDigit = false;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequiredLength = 4;
+            options.Password.RequireUppercase = false;
+            options.Password.RequireLowercase = false;
+        })
+            .AddRoles<IdentityRole>()
+            .AddDefaultTokenProviders()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
         builder.Services.AddControllersWithViews();
@@ -72,9 +110,17 @@ public class Program
                 scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var roleManager =
                 scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var logger =
-                scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+            var userManager =
+            //    scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            //var customerManager =
+            //    scope.ServiceProvider.GetRequiredService<UserManager<Customer>>();
+            //var staffManager =
+            //    scope.ServiceProvider.GetRequiredService<UserManager<Staff>>();
+            //var logger =
+            //    scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
+            // EnsureDeleted() and EnsureCreated() are used to create a new database and seed it with date
+            // In this case roles and a later an admin user.
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
 
@@ -89,71 +135,77 @@ public class Program
                     await roleManager.CreateAsync(new IdentityRole(role));
                 }
             }
+
         }
 
         using (var scope = app.Services.CreateScope())
         {
             var userManager =
                 scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var customerManager =
+                scope.ServiceProvider.GetRequiredService<UserManager<Customer>>();
+            var staffManager =
+                scope.ServiceProvider.GetRequiredService<UserManager<Staff>>();
+            var context =
+                scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
             string adminRole = "Admin";
             string adminEmail = "admin@admin.com";
-            string adminPassword = "Admin1234!";
+            string adminPassword = "1234";
 
-            var user = await userManager.FindByEmailAsync(adminEmail.Normalize());
+            var admin = await userManager.FindByEmailAsync(adminEmail.Normalize());
 
             if (await userManager.FindByEmailAsync(adminEmail) == null)
             {
-                user = new IdentityUser();
-                user.UserName = adminEmail;
-                user.Email = adminEmail;
-                user.EmailConfirmed = true;
-
-                await userManager.CreateAsync(user, adminPassword);
-
-                await userManager.AddToRoleAsync(user, adminRole);
+                admin = new IdentityUser();
+                admin.UserName = adminEmail;
+                admin.Email = adminEmail;
+                admin.EmailConfirmed = true;
+                await userManager.CreateAsync(admin, adminPassword);
+                await userManager.AddToRoleAsync(admin, adminRole);
             }
+
+            string managerRole = "Manager";
+            string managerEmail = "manager@manager.com";
+            string managerPassword = "1234";
+
+            var manager = await userManager.FindByEmailAsync(managerEmail.Normalize());
+
+            if (await userManager.FindByEmailAsync(managerEmail) == null)
+            {
+                manager = new IdentityUser();
+                manager.UserName = managerEmail;
+                manager.Email = managerEmail;
+                manager.EmailConfirmed = true;
+                await userManager.CreateAsync(manager, managerPassword);
+                await userManager.AddToRoleAsync(manager, managerRole);
+            }
+
+            var staff1 = new Staff();
+            staff1.UserName = "Staff";
+            staff1.FirstName = "Staff";
+            staff1.LastName = "One";
+            staff1.Address = "Address 6";
+            staff1.City = "City 6";
+            staff1.PostalCode = "66666";
+            staff1.Country = "Denmark";
+            staff1.Phone = "66666666";
+            staff1.Email = "staff1@staff.com";
+
+            await userManager.CreateAsync(staff1, "1234");
+            await userManager.AddToRoleAsync(staff1, "Manager");
+            //DbInitializer DatabaseInitializer = new DbInitializer(context, userManager, customerManager, staffManager);
+            //await DatabaseInitializer.SeedDatabase();
         }
         app.Run();
     }
 }
-
-
-
-
 
 // out commented code
 
 //AddIdentityServices(builder);
 //AddAuthorizationPolicies(builder);
 //ConfigureApplicationCookie(builder);
-
-//var app = builder.Build();
-
-//// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseDeveloperExceptionPage();
-//}
-//else
-//{
-//    app.UseExceptionHandler("/Error");
-//    app.UseHsts();
-//}
-
-//// app.UseEndpoints(endpoints => endpoints.MapRazorPages());
-
-//app.UseHttpsRedirection();
-//app.UseStaticFiles();
-//app.UseRouting();
-//app.UseAuthorization();
-//app.UseAuthentication();
-//app.MapRazorPages();
-
-//EnsureDatabaseIntegrity(app).Wait();
-//EnsureRolesAndAdminUser(app).Wait();
-
-//app.Run();
 
 //static void AddIdentityServices(WebApplicationBuilder builder)
 //{
@@ -191,37 +243,4 @@ public class Program
 //        options.ConsentCookie.Name = "WebshopTemplateConsentCookie";
 //        options.ConsentCookie.Expiration = TimeSpan.FromDays(365);
 //    });
-//}
-//static Task EnsureDatabaseIntegrity(WebApplication app)
-//{
-//    using var scope = app.Services.CreateScope();
-//    var services = scope.ServiceProvider;
-//    var context = services.GetRequiredService<ApplicationDbContext>();
-//    var identityContext = services.GetRequiredService<IdentityDbContext>();
-//    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
-//    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-//    var logger = services.GetRequiredService<ILogger<Program>>();
-
-//    if (app.Environment.IsDevelopment())
-//    {
-//        app.UseDeveloperExceptionPage();
-//    }
-//    else
-//    {
-//        app.UseExceptionHandler("/Error");
-//        app.UseHsts();
-//    }
-
-//    DbInitializer.Initialize(context, userManager, roleManager).Wait();
-//    return Task.CompletedTask;
-//}
-//static async Task EnsureRolesAndAdminUser(WebApplication app)
-//{
-//    using var scope = app.Services.CreateScope();
-//    var services = scope.ServiceProvider;
-//    var context = services.GetRequiredService<ApplicationDbContext>();
-//    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
-//    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-//    var logger = services.GetRequiredService<ILogger<Program>>();
-//    await DbInitializer.Initialize(context, userManager, roleManager);
 //}
