@@ -64,9 +64,7 @@ public static class Program
             options.Password.RequireLowercase = false;
         })
             .AddRoles<IdentityRole>()
-            .AddDefaultUI()
             .AddDefaultTokenProviders()
-            .AddSignInManager<SignInManager<Customer>>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
         builder.Services.AddIdentityCore<Staff>(options =>

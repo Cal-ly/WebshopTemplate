@@ -22,24 +22,24 @@ namespace WebshopTemplate.Areas.Identity.Data.Seeddata
         public async Task SeedDatabase()
         {
 
-            ArgumentNullException.ThrowIfNull(_userManager);
+            //ArgumentNullException.ThrowIfNull(_userManager);
 
-            _context.Database.EnsureCreated();
+            //_context.Database.EnsureCreated();
 
-            var staff1 = new Staff();
-            staff1.UserName = "Staff1";
-            staff1.FirstName = "Staff";
-            staff1.LastName = "One";
-            staff1.Address = "Address 6";
-            staff1.City = "City 6";
-            staff1.PostalCode = "66666";
-            staff1.Country = "Denmark";
-            staff1.Phone = "66666666";
-            staff1.Email = "staff1@staff.com";
+            //var staff1 = new Staff();
+            //staff1.UserName = "Staff1";
+            //staff1.FirstName = "Staff";
+            //staff1.LastName = "One";
+            //staff1.Address = "Address 6";
+            //staff1.City = "City 6";
+            //staff1.PostalCode = "66666";
+            //staff1.Country = "Denmark";
+            //staff1.Phone = "66666666";
+            //staff1.Email = "staff1@staff.com";
 
-            await _staffManager.CreateAsync(staff1, "1234");
-            await _staffManager.AddToRoleAsync(staff1, "Manager");
-            await _context.SaveChangesAsync();
+            //await _staffManager.CreateAsync(staff1, "1234");
+            //await _staffManager.AddToRoleAsync(staff1, "Manager");
+            //await _context.SaveChangesAsync();
 
             //// Define companies
             //var company1 = new Company { Name = "Dead'R'Us", Address = "Street 1", City = "City A", PostalCode = "12345", Country = "Denmark", Email = "contact@companya.com", Phone = "12345678", Website = "www.companya.com" };
