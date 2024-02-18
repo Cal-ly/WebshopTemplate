@@ -1,4 +1,6 @@
-﻿namespace WebshopTemplate.Services
+﻿using WebshopTemplate.DTO;
+
+namespace WebshopTemplate.Services
 {
     public class AnalyticsService : IAnalyticsService
     {

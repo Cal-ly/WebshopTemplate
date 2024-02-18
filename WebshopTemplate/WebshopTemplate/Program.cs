@@ -22,11 +22,13 @@ global using System.Diagnostics;
 global using System.Linq;
 global using System.Threading.Tasks;
 global using WebshopTemplate.Data;
+global using WebshopTemplate.Areas.Identity.Data.Seeddata;
 global using WebshopTemplate.Models;
 global using WebshopTemplate.Interfaces;
 global using WebshopTemplate.Repositories;
 global using WebshopTemplate.Services;
-global using WebshopTemplate.Services.DTO;
+global using WebshopTemplate.DTO;
+global using WebshopTemplate.Helpers;
 
 
 namespace WebshopTemplate;
@@ -50,32 +52,6 @@ public static class Program
         })
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
-
-        //builder.Services.AddIdentityCore<Customer>(options =>
-        //{
-        //    options.SignIn.RequireConfirmedAccount = false;
-        //    options.Password.RequireDigit = false;
-        //    options.Password.RequireNonAlphanumeric = false;
-        //    options.Password.RequiredLength = 4;
-        //    options.Password.RequireUppercase = false;
-        //    options.Password.RequireLowercase = false;
-        //})
-        //    .AddRoles<IdentityRole>()
-        //    .AddDefaultTokenProviders()
-        //    .AddEntityFrameworkStores<ApplicationDbContext>();
-
-        //builder.Services.AddIdentityCore<Staff>(options =>
-        //{
-        //    options.SignIn.RequireConfirmedAccount = false;
-        //    options.Password.RequireDigit = false;
-        //    options.Password.RequireNonAlphanumeric = false;
-        //    options.Password.RequiredLength = 4;
-        //    options.Password.RequireUppercase = false;
-        //    options.Password.RequireLowercase = false;
-        //})
-        //    .AddRoles<IdentityRole>()
-        //    .AddDefaultTokenProviders()
-        //    .AddEntityFrameworkStores<ApplicationDbContext>();
 
         builder.Services.AddControllersWithViews();
         builder.Services.AddRazorPages();
@@ -126,10 +102,6 @@ public static class Program
         {
             var userManager =
                 scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-            //var customerManager =
-            //    scope.ServiceProvider.GetRequiredService<UserManager<Customer>>();
-            //var staffManager =
-            //    scope.ServiceProvider.GetRequiredService<UserManager<Staff>>();
             var context =
                 scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
@@ -183,53 +155,9 @@ public static class Program
                 await context.SaveChangesAsync();
             }
 
-            //DbInitializer DatabaseInitializer = new DbInitializer(context, userManager, customerManager, staffManager);
-            //await DatabaseInitializer.SeedDatabase();
+            DbInitializer DatabaseInitializer = new DbInitializer(context, userManager);
+            await DatabaseInitializer.SeedDatabase();
         }
         app.Run();
     }
 }
-
-// out commented code
-
-//AddIdentityServices(builder);
-//AddAuthorizationPolicies(builder);
-//ConfigureApplicationCookie(builder);
-
-//static void AddIdentityServices(WebApplicationBuilder builder)
-//{
-//    builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-//        .AddRoles<IdentityRole>()
-//        .AddEntityFrameworkStores<ApplicationDbContext>();
-//}
-//static void AddAuthorizationPolicies(WebApplicationBuilder builder)
-//{
-//    builder.Services.AddAuthorization(options =>
-//    {
-//        options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
-//        options.AddPolicy("RequireManagerRole", policy => policy.RequireRole("Admin", "Manager"));
-//        options.AddPolicy("RequireSuperMemberRole", policy => policy.RequireRole("Admin", "Manager", "SuperMember"));
-//        options.AddPolicy("RequireMemberRole", policy => policy.RequireRole("Admin", "Manager", "SuperMember", "Member"));
-//        options.AddPolicy("RequireAuthenticatedUser", policy => policy.RequireAuthenticatedUser());
-//    });
-//}
-//static void ConfigureApplicationCookie(WebApplicationBuilder builder)
-//{
-//    builder.Services.ConfigureApplicationCookie(options =>
-//    {
-//        options.Cookie.Name = "WebshopTemplateCookie";
-//        options.LoginPath = "/Identity/Account/Login";
-//        options.LogoutPath = "/Identity/Account/Logout";
-//        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-//        options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
-//        options.SlidingExpiration = true;
-//    });
-
-//    builder.Services.Configure<CookiePolicyOptions>(options =>
-//    {
-//        options.CheckConsentNeeded = context => true;
-//        options.MinimumSameSitePolicy = SameSiteMode.None;
-//        options.ConsentCookie.Name = "WebshopTemplateConsentCookie";
-//        options.ConsentCookie.Expiration = TimeSpan.FromDays(365);
-//    });
-//}

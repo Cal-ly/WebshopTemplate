@@ -8,27 +8,27 @@
         {
             _context = context;
         }
-        public async void AddAsync(Order order)
+
+        public async Task Add(Order order)
         {
             await _context.Orders.AddAsync(order);
             await _context.SaveChangesAsync();
         }
 
-
-        public async Task<Order?> GetAsync(string id)
+        public async Task<Order> Get(string id)
         {
             return await _context.Orders
                 .Include(o => o.OrderDetails)
                 .ThenInclude(od => od.Product)
-                .FirstOrDefaultAsync(o => o.Id == id);
+                .FirstOrDefaultAsync(o => o.Id == id) ?? throw new Exception("Order not found.");
         }
 
-        public async Task<List<Order?>> GetAllAsync()
+        public async Task<List<Order>> GetAllAsync()
         {
-            return await _context.Orders.ToListAsync();
+            return await _context.Orders.AsNoTracking().ToListAsync();
         }
 
-        public async Task<Order?> UpdateOrderAsync(Order order)
+        public async Task<Order> UpdateOrderAsync(Order order)
         {
             _context.Orders.Update(order);
             await _context.SaveChangesAsync();
@@ -43,27 +43,14 @@
                 _context.Orders.Remove(order);
                 await _context.SaveChangesAsync();
             }
-            return order;
-        }
-
-        public async Task<Order?> GetOrderByIdAsync(string id, string? include = null)
-        {
-            if (include == null)
-            {
-                return await _context.Orders.FindAsync(id);
-            }
-            else
-            {
-                return await _context.Orders
-                    .Include(include)
-                    .FirstOrDefaultAsync(o => o.Id == id);
-            }
+            return order == null ? order : throw new Exception("Order not found.");
         }
 
         public async Task<List<Order>> GetOrdersByCustomerIdAsync(string customerId)
         {
             return await _context.Orders
                 .Where(o => o.CustomerId == customerId)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -71,6 +58,7 @@
         {
             return await _context.Orders
                 .Where(o => o.StaffId == staffId)
+                .AsNoTracking()
                 .ToListAsync();
         }
     }

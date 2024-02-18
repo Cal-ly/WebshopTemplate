@@ -12,7 +12,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     /// using the Table-Per-Hierarchy (TPH) approach, where a single table
     /// will contain users of all types, distinguished by a discriminator column.
     /// </summary>
-    //public DbSet<IdentityUser> Users { get; set; }
+    public DbSet<IdentityUser> IdentityUsers { get; set; }
     public DbSet<Staff> StaffMembers { get; set; }
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Company> Companies { get; set; }
@@ -32,7 +32,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
         #region Relationship IdentityUser
         modelBuilder.Entity<IdentityUser>(entity =>
         {
-            entity.ToTable("Users");
+            entity.ToTable("IdentityUsers");
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.HasIndex(e => e.Id);
             entity.Property(e => e.UserName).HasMaxLength(256);
