@@ -1,0 +1,20 @@
+﻿@page
+@model WebshopTemplate.Pages.Analytics.IndexModel
+@{
+    ViewData["Title"] = "Analytics";
+}
+
+<h2>Analytics</h2>
+
+<div>
+    <h3>Total Sales Today</h3>
+    <p>@Model.TotalSales</p>
+
+    <h3>Top Selling Products (Last 30 Days)</h3>
+    <ul>
+        @foreach (var product in Model.TopSellingProducts)
+        {
+            <li>@product.ProductName - Sold: @product.TotalQuantitySold, Total Sales: @product.TotalSales</li>
+        }
+    </ul>
+</div>

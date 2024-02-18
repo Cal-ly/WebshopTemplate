@@ -17,10 +17,11 @@
 
         public async Task<Order> Get(string id)
         {
-            return await _context.Orders
-                .Include(o => o.OrderDetails)
-                .ThenInclude(od => od.Product)
-                .FirstOrDefaultAsync(o => o.Id == id) ?? throw new Exception("Order not found.");
+            //return await _context.Orders
+            //    .Include(o => o.OrderDetails)
+            //    .ThenInclude(od => od.Product)
+            //    .FirstOrDefaultAsync(o => o.Id == id);
+            return await _context.Orders.FindAsync(id);
         }
 
         public async Task<List<Order>> GetAllAsync()
