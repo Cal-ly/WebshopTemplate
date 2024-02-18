@@ -1,0 +1,54 @@
+﻿/ProjectRoot
+    /Areas
+        /Identity
+            /Pages
+                /Account
+                    - Login.cshtml
+                    - Register.cshtml
+                    - Logout.cshtml
+                    - Manage.cshtml
+    /Controllers
+    /Data
+        - ApplicationDbContext.cs
+    /Models
+        - ApplicationUser.cs
+        - Product.cs
+        - Order.cs
+        - OrderDetail.cs
+        - Basket.cs
+        - BasketItem.cs
+    /Interfaces
+        - IOrderService.cs
+        - IProductService.cs
+        - IBasketService.cs
+        - IAnalyticsService.cs
+    /Services
+        - OrderService.cs
+        - ProductService.cs
+        - BasketService.cs
+        - AnalyticsService.cs
+    /Repositories
+        - OrderRepository.cs
+        - ProductRepository.cs
+        - BasketRepository.cs (if applicable, depending on how basket data is stored)
+    /Pages
+        - Index.cshtml
+        /Basket
+            - Index.cshtml
+            - Add.cshtml
+            - Remove.cshtml
+        /Orders
+            - Create.cshtml
+            - Details.cshtml
+        /Analytics
+            - Dashboard.cshtml
+    /ViewModels
+        - BasketViewModel.cs
+        - OrderViewModel.cs
+        - AnalyticsViewModel.cs
+    /wwwroot
+        /css
+        /js
+        /lib
+    - appsettings.json
+    - Program.cs (or Startup.cs for older versions)

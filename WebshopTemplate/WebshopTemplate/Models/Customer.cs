@@ -3,8 +3,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebshopTemplate.Models
 {
-    public class Customer : IdentityUser
+    public class Customer
     {
+        // The Id property is the primary key
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public string? Id { get; set; }
+        public string UserId { get; set; } = string.Empty;
+        [ForeignKey("UserId")]
+        public IdentityUser User { get; set; } = null!;
         public string? FirstName { get; set; } = string.Empty;
         public string? LastName { get; set; } = string.Empty;
         public string? Address { get; set; } = string.Empty;
@@ -12,7 +18,6 @@ namespace WebshopTemplate.Models
         public string? PostalCode { get; set; } = string.Empty;
         public string? Country { get; set; } = "Denmark";
         public string? Phone { get; set; } = string.Empty;
-
         /// <summary>
         /// List of orders placed by the customer.
         /// The list is initialized to avoid null reference exceptions, but can be empty.
@@ -23,13 +28,11 @@ namespace WebshopTemplate.Models
         /// </summary>
         public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
-        // Foreign key for Company
-        public string? CompanyId { get; set; }
 
-        // Navigation property for Company
-        [ForeignKey("CompanyId")]
+        // Customer-specific details
+        public string? CompanyId { get; set; } // Foreign key for Company
+        [ForeignKey("CompanyId")] // Navigation property for Company
         public virtual Company? RepresentingCompany { get; set; }
-
         public string? Shopnotes { get; set; } = string.Empty;
 
         // Calculated properties

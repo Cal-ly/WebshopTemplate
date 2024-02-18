@@ -8,9 +8,9 @@ namespace WebshopTemplate.Models
         public string Id { get; set; } = null!; // Primary key for the order - ID of the order in the database
 
         // Foreign key for User. This is the ID of the Customer who placed the order
-        public string UserId { get; set; } = null!;
+        public string CustomerId { get; set; } = null!;
         // Navigation property for User
-        [ForeignKey("UserId")]
+        [ForeignKey("CustomerId")]
         public virtual Customer Customer { get; set; } = null!; // The customer who placed the order. Is virtual to allow for lazy loading. Lazy loading is the concept of delaying the loading of related data until you specifically request for it. This can be useful when you have a large amount of data and you don't want to load it all at once. It can also be useful when you want to avoid circular references. Lazy loading is enabled by default in Entity Framework Core.
 
         // Foreign key for Staff. This is the ID of the Staff member who handled the order
@@ -18,6 +18,7 @@ namespace WebshopTemplate.Models
         [ForeignKey("StaffId")]
         public virtual Staff? Staff { get; set; } // The staff member who handled the order. Is virtual to allow for lazy loading.
 
+        public DateTime? OrderDate { get; set; } = null!; // Date and time of the order
         public OrderStatus Status { get; set; } = new OrderStatus(); // Status of the order (Submitted, Pending, Received, Confirmed, Processing, Ready, Shipped, Delivered, Cancelled)
         public string CommentFromUser { get; set; } = string.Empty;
         public string CommentFromShop { get; set; } = string.Empty;

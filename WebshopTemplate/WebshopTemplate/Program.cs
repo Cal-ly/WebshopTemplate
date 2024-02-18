@@ -1,5 +1,4 @@
 global using Microsoft.AspNetCore.Authentication;
-global using Microsoft.AspNetCore.Authentication.Cookies;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Builder;
 global using Microsoft.AspNetCore.Hosting;
@@ -11,9 +10,6 @@ global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Mvc.RazorPages;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Infrastructure;
-global using Microsoft.EntityFrameworkCore.Migrations;
-global using Microsoft.EntityFrameworkCore.Storage;
-global using Microsoft.EntityFrameworkCore.Design;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
@@ -27,10 +23,11 @@ global using System.Linq;
 global using System.Threading.Tasks;
 global using WebshopTemplate.Data;
 global using WebshopTemplate.Models;
-global using WebshopTemplate.Areas.Identity.Data;
-global using WebshopTemplate.Areas.Identity.Data.Seeddata;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
-using Microsoft.Extensions.Options;
+global using WebshopTemplate.Interfaces;
+global using WebshopTemplate.Repositories;
+global using WebshopTemplate.Services;
+global using WebshopTemplate.Services.DTO;
+
 
 namespace WebshopTemplate;
 public static class Program
@@ -54,31 +51,31 @@ public static class Program
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
-        builder.Services.AddIdentityCore<Customer>(options =>
-        {
-            options.SignIn.RequireConfirmedAccount = false;
-            options.Password.RequireDigit = false;
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequiredLength = 4;
-            options.Password.RequireUppercase = false;
-            options.Password.RequireLowercase = false;
-        })
-            .AddRoles<IdentityRole>()
-            .AddDefaultTokenProviders()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+        //builder.Services.AddIdentityCore<Customer>(options =>
+        //{
+        //    options.SignIn.RequireConfirmedAccount = false;
+        //    options.Password.RequireDigit = false;
+        //    options.Password.RequireNonAlphanumeric = false;
+        //    options.Password.RequiredLength = 4;
+        //    options.Password.RequireUppercase = false;
+        //    options.Password.RequireLowercase = false;
+        //})
+        //    .AddRoles<IdentityRole>()
+        //    .AddDefaultTokenProviders()
+        //    .AddEntityFrameworkStores<ApplicationDbContext>();
 
-        builder.Services.AddIdentityCore<Staff>(options =>
-        {
-            options.SignIn.RequireConfirmedAccount = false;
-            options.Password.RequireDigit = false;
-            options.Password.RequireNonAlphanumeric = false;
-            options.Password.RequiredLength = 4;
-            options.Password.RequireUppercase = false;
-            options.Password.RequireLowercase = false;
-        })
-            .AddRoles<IdentityRole>()
-            .AddDefaultTokenProviders()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+        //builder.Services.AddIdentityCore<Staff>(options =>
+        //{
+        //    options.SignIn.RequireConfirmedAccount = false;
+        //    options.Password.RequireDigit = false;
+        //    options.Password.RequireNonAlphanumeric = false;
+        //    options.Password.RequiredLength = 4;
+        //    options.Password.RequireUppercase = false;
+        //    options.Password.RequireLowercase = false;
+        //})
+        //    .AddRoles<IdentityRole>()
+        //    .AddDefaultTokenProviders()
+        //    .AddEntityFrameworkStores<ApplicationDbContext>();
 
         builder.Services.AddControllersWithViews();
         builder.Services.AddRazorPages();
@@ -108,17 +105,6 @@ public static class Program
                 scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var roleManager =
                 scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var userManager =
-            //    scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-            //var customerManager =
-            //    scope.ServiceProvider.GetRequiredService<UserManager<Customer>>();
-            //var staffManager =
-            //    scope.ServiceProvider.GetRequiredService<UserManager<Staff>>();
-            //var logger =
-            //    scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-
-            // EnsureDeleted() and EnsureCreated() are used to create a new database and seed it with date
-            // In this case roles and a later an admin user.
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
 
@@ -140,10 +126,10 @@ public static class Program
         {
             var userManager =
                 scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-            var customerManager =
-                scope.ServiceProvider.GetRequiredService<UserManager<Customer>>();
-            var staffManager =
-                scope.ServiceProvider.GetRequiredService<UserManager<Staff>>();
+            //var customerManager =
+            //    scope.ServiceProvider.GetRequiredService<UserManager<Customer>>();
+            //var staffManager =
+            //    scope.ServiceProvider.GetRequiredService<UserManager<Staff>>();
             var context =
                 scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
@@ -177,21 +163,26 @@ public static class Program
                 manager.EmailConfirmed = true;
                 await userManager.CreateAsync(manager, managerPassword);
                 await userManager.AddToRoleAsync(manager, managerRole);
+                Staff staffMember = new Staff
+                {
+                    User = manager,
+                    UserId = manager.Id,
+                    FirstName = "Manager",
+                    LastName = "One",
+                    Address = "Address 6",
+                    City = "City 6",
+                    PostalCode = "66666",
+                    Country = "Denmark",
+                    Phone = "66666666",
+                    EmploymentDate = DateTime.Now,
+                    BasePay = 0,
+                    Notes = "Manager",
+                    ImageUrl = "manager.jpg"
+                };
+                context.StaffMembers.Add(staffMember);
+                await context.SaveChangesAsync();
             }
 
-            var staff1 = new Staff();
-            staff1.UserName = "Staff";
-            staff1.FirstName = "Staff";
-            staff1.LastName = "One";
-            staff1.Address = "Address 6";
-            staff1.City = "City 6";
-            staff1.PostalCode = "66666";
-            staff1.Country = "Denmark";
-            staff1.Phone = "66666666";
-            staff1.Email = "staff1@staff.com";
-
-            await userManager.CreateAsync(staff1, "1234");
-            await userManager.AddToRoleAsync(staff1, "Manager");
             //DbInitializer DatabaseInitializer = new DbInitializer(context, userManager, customerManager, staffManager);
             //await DatabaseInitializer.SeedDatabase();
         }

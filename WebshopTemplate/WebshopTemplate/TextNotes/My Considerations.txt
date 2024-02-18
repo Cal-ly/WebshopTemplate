@@ -3,7 +3,7 @@ Deciding between using a string, an enum, or implementing a new class for produc
 Each approach has its pros and cons, which I'll outline below, along with a recommendation for a scenario like a webshop where flexibility, scalability, and the ability to gather statistics are important.
 With this in mind future development and maintenance of the system should be considered when making a decision, as well as the potential for changes in the categorization needs of the webshop.
 
---- String Approach
+String Approach
 Pros:
   - Simplicity: Easy to implement and requires no additional classes or enums.
   - Flexibility: Can easily add new categories without changing the codebase.
@@ -11,7 +11,7 @@ Cons:
   - Prone to typos and inconsistency: Different users might enter variations of the same category (e.g., "Electronics" vs. "Electronic").
   - Harder to manage: No centralized place to see all categories or manage them.
 
---- Enum Approach
+Enum Approach
 Pros:
   - Type safety: Reduces the risk of typos and ensures consistency across product categories.
   - Easy to use in switch statements or conditional logic within your code.
@@ -19,7 +19,7 @@ Cons:
   - Limited flexibility: Adding or changing categories requires code changes and redeployments, which can be cumbersome.
   - Scalability: As your webshop grows, the enum can become large and unwieldy, and changing enums might involve database migrations if you store the enum values in the database.
 
---- Class Approach (New `Category` Class)
+Class Approach (New `Category` Class)
 Pros:
   - Flexibility and scalability: Allows for easy addition, removal, or modification of categories without code changes. You can manage categories directly in your database.
   - Richness: Enables storing additional information about categories (e.g., description, parent category for nested categories).
@@ -30,3 +30,23 @@ Cons:
 
 Decision: Class Approach, given the requirements for flexibility, scalability, and the ability to generate detailed statistics, implementing a Category class would be the most advantageous approach.
 It provides a robust foundation for future growth and changes to a webshop's categorization needs.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+My thoughts on implementing a IdentityUser with a relationship for my Customer and Staff class'
+Deciding to abstract login information away from Customer and Staff classes by not directly extending IdentityUser can enhance modularity and flexibility.
+
+Pros:
+ - Flexibility: Allows distinct management of user authentication separately from user role functionalities, enabling clearer separation of concerns.
+ - Modularity: Easier to modify or extend user roles or authentication mechanisms without impacting the other.
+ - Security: Limits exposure of sensitive authentication details by keeping them isolated.
+
+Cons:
+ - Complexity: Requires additional configuration to associate Customer and Staff with their respective IdentityUser records for authentication.
+ - Development Overhead: Might increase the amount of boilerplate code for managing relationships and syncing data between user entities and authentication entities.
+ - Potential for Inconsistencies: Without careful management, there's a risk of data mismatches between user data and authentication data.
+
+Decision: Given the potential benefits of modularity and flexibility, abstracting login information away from Customer and Staff classes by not directly extending IdentityUser would be a good choice. It allows for more granular control over user authentication and role management, which can be beneficial in the long run.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+

@@ -12,9 +12,9 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     /// using the Table-Per-Hierarchy (TPH) approach, where a single table
     /// will contain users of all types, distinguished by a discriminator column.
     /// </summary>
-    //public DbSet<Staff> StaffMembers { get; set; }
-    //public DbSet<Customer> Customers { get; set; }
-    public DbSet<IdentityUser> Users { get; set; }
+    //public DbSet<IdentityUser> Users { get; set; }
+    public DbSet<Staff> StaffMembers { get; set; }
+    public DbSet<Customer> Customers { get; set; }
     public DbSet<Company> Companies { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Category> Categories { get; set; }
@@ -29,27 +29,27 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
         base.OnModelCreating(modelBuilder);
 
+        #region Relationship IdentityUser
         modelBuilder.Entity<IdentityUser>(entity =>
         {
-            entity.ToTable("Users")
-            .HasDiscriminator<string>("UserType")
-                    .HasValue<IdentityUser>("IdentityUser")
-                    .HasValue<Customer>("Customer")
-                    .HasValue<Staff>("Staff");
+            entity.ToTable("Users");
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.HasIndex(e => e.Id);
             entity.Property(e => e.UserName).HasMaxLength(256);
         });
+        #endregion
 
+        #region Relationship Customer
         modelBuilder.Entity<Customer>(entity =>
         {
-            //entity.ToTable("Customers");
-            entity.ToTable("Users");
-            entity.HasDiscriminator<string>("UserType")
-                    .HasValue<Customer>("Customer");
+            entity.ToTable("Customers");
+            entity.Property(c => c.Id).ValueGeneratedOnAdd();
+            entity.HasIndex(c => c.Id);
+            entity.HasOne(c => c.User).WithOne().HasForeignKey<Customer>(c => c.UserId); // One-to-One relationship between Customer and IdentityUser
+
             entity.HasOne(c => c.RepresentingCompany)
                         .WithMany(co => co.Representatives)
                                         .HasForeignKey(c => c.CompanyId);
-            entity.HasIndex(c => c.Id);
             entity.Property(c => c.CompanyId)
                         .IsRequired(false);
             entity.Property(c => c.CompanyId)
@@ -57,35 +57,20 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             entity.Property(c => c.CompanyId)
                         .ValueGeneratedNever();
         });
+        #endregion
 
+        #region Relationship Staff
         modelBuilder.Entity<Staff>(entity =>
         {
-            //entity.ToTable("StaffMembers");
-            entity.ToTable("Users");
-            entity.HasDiscriminator<string>("UserType")
-                    .HasValue<Staff>("Staff");
-            entity.HasIndex(s => s.Id);
+            entity.ToTable("StaffMembers");
             entity.Property(s => s.Id).ValueGeneratedOnAdd();
+            entity.HasIndex(s => s.Id);
+            entity.HasOne(s => s.User).WithOne().HasForeignKey<Staff>(s => s.UserId); // One-to-One relationship between Staff and IdentityUser
+
             entity.HasMany(s => s.Orders) // Staff has many Orders
                     .WithOne(o => o.Staff) // Each Order has one Staff
                         .HasForeignKey(o => o.StaffId); // ForeignKey in Order pointing to Staff
         });
-
-        #region Relationship Staff - Order
-        modelBuilder.Entity<Staff>()
-            .HasMany(s => s.Orders) // Staff has many Orders
-            .WithOne(o => o.Staff) // Each Order has one Staff
-            .HasForeignKey(o => o.StaffId); // ForeignKey in Order pointing to Staff
-        #endregion
-
-
-        #region Relationship Order - Customer
-        modelBuilder.Entity<Customer>()
-            .HasMany(c => c.Orders) // Customer has many Orders
-            .WithOne(o => o.Customer) // Each Order has one Customer
-            .HasForeignKey(o => o.UserId); // ForeignKey in Order pointing to Customer
-        modelBuilder.Entity<Customer>()
-            .HasIndex(c => c.Id); // Index on Id in Customer
         #endregion
 
         #region Relationship Order - OrderDetail - Product
@@ -116,6 +101,8 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
         #endregion
 
     }
+
+public DbSet<WebshopTemplate.Models.Basket> Basket { get; set; } = default!;
 }
         //#region Relationship Customer - Company
         //modelBuilder.Entity<Customer>()
