@@ -1,6 +1,8 @@
 ﻿My ToDo over the project in bullet form:
 
 Important
+- [x] Implement config file
+
 - [x] Implement basket and basketId functionality
 - [x] Create realtion between basket and product
 - [x] Implement interface, services and repository for all classes
@@ -18,15 +20,3 @@ Important but dependent on the above
 Nice to have
 - [x] Implement documentation
 - [x] Implement logging
-
-
-SqlException: Invalid column name 'Discriminator'.
-Invalid column name 'Address'.
-Invalid column name 'City'.
-Invalid column name 'CompanyId'.
-Invalid column name 'Country'.
-Invalid column name 'FirstName'.
-Invalid column name 'LastName'.
-Invalid column name 'Phone'.
-Invalid column name 'PostalCode'.
-Invalid column name 'Shopnotes'.

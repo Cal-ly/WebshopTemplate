@@ -1,4 +1,4 @@
-﻿namespace WebshopTemplate.Services.Extensions
+﻿namespace WebshopTemplate.Extensions
 {
     // Extension method to set the basket in session
     public static class SessionExtensions

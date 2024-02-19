@@ -384,3 +384,53 @@ namespace WebshopTemplate.Services
 }
 
 ------------------------------------------
+
+        //builder.Services.AddSession(options =>
+        //{
+        //    options.IdleTimeout = TimeSpan.FromMinutes(30);
+        //    options.Cookie.HttpOnly = true;
+        //    options.Cookie.IsEssential = true;
+        //    options.Cookie.Name = ".WebshopTemplate.Session";
+        //    // options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        //    options.IOTimeout = TimeSpan.FromMinutes(30);
+        //    options.Cookie.SameSite = SameSiteMode.None; //.Strict; should be strict, but strict is not supported by all browsers and we are in a development environment
+
+        //});
+
+
+        //builder.Services.ConfigureApplicationCookie(options =>
+        //{
+        //    // Cookie settings
+        //    options.Cookie.HttpOnly = true;
+        //    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+        //    // If the LoginPath isn't set, ASP.NET Core defaults the path to /Account/Login.
+        //    options.LoginPath = "/Identity/Account/Login";
+        //    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+        //    options.SlidingExpiration = true;
+        //});
+
+------------------------------------------
+
+        //using (var scope = app.Services.CreateScope())
+        //{
+        //    var context =
+        //        scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        //    var roleManager =
+        //        scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        //    context.Database.EnsureDeleted();
+        //    context.Database.EnsureCreated();
+
+        //    var roles = new[] { "Admin", "Manager", "SuperMember", "Member" };
+
+        //    foreach (var role in roles)
+        //    {
+        //        var roleExist = await roleManager.RoleExistsAsync(role);
+        //        if (!roleExist)
+        //        {
+        //            //create the roles and seed them to the database
+        //            await roleManager.CreateAsync(new IdentityRole(role));
+        //        }
+        //    }
+        //}
+
+------------------------------------------

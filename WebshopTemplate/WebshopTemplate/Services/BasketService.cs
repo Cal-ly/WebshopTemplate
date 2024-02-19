@@ -1,4 +1,6 @@
-﻿namespace WebshopTemplate.Services
+﻿using WebshopTemplate.Extensions;
+
+namespace WebshopTemplate.Services
 {
     public class BasketService : IBasketService
     {

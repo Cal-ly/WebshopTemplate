@@ -1,7 +1,7 @@
 ﻿using WebshopTemplate.Models;
 using System.Linq;
 
-namespace WebshopTemplate.Seeddata
+namespace WebshopTemplate.Initializers
 {
     public class DbInitializer
     {
