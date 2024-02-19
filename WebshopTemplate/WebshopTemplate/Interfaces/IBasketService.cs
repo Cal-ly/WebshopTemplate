@@ -2,9 +2,10 @@
 {
     public interface IBasketService
     {
-        Task AddItemAsync(string basketId, int productId, int quantity);
-        Task RemoveItemAsync(string basketId, int productId);
-        void TransferSessionBasketToUser(string userId, string sessionBasketId, HttpContext httpContext);
+        Task<Basket> GetBasketAsync(string basketId);
+        Task AddBasketItemAsync(string basketId, string productId, int quantity);
+        Task RemoveBasketItemAsync(string basketId, string productId);
+        void TransferSessionBasketToUser(string userId, string sessionBasketId);
+        void TransferUserBasketToSession(string userId, string sessionBasketId);
     }
-
 }

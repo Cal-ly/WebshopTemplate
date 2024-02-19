@@ -35,6 +35,7 @@ global using WebshopTemplate.Services;
 global using WebshopTemplate.DTO;
 global using WebshopTemplate.Pages.Analytics;
 global using WebshopTemplate.Helpers;
+global using WebshopTemplate.Pages;
 
 namespace WebshopTemplate;
 public static class Program

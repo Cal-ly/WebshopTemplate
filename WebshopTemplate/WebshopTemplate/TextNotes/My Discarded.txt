@@ -205,37 +205,69 @@ namespace WebshopTemplate.Seeddata
 From Program.cs
 
 //string managerRole = "Manager";
-            //string managerEmail = "manager@manager.com";
-            //string managerPassword = "1234";
+//string managerEmail = "manager@manager.com";
+//string managerPassword = "1234";
 
-            //var manager = await userManager.FindByEmailAsync(managerEmail.Normalize());
+//var manager = await userManager.FindByEmailAsync(managerEmail.Normalize());
 
-            //if (await userManager.FindByEmailAsync(managerEmail) == null)
-            //{
-            //    manager = new IdentityUser();
-            //    manager.UserName = managerEmail;
-            //    manager.Email = managerEmail;
-            //    manager.EmailConfirmed = true;
-            //    await userManager.CreateAsync(manager, managerPassword);
-            //    await userManager.AddToRoleAsync(manager, managerRole);
-            //    Staff staffMember = new Staff
-            //    {
-            //        User = manager,
-            //        UserId = manager.Id,
-            //        FirstName = "Manager",
-            //        LastName = "One",
-            //        Address = "Address 6",
-            //        City = "City 6",
-            //        PostalCode = "66666",
-            //        Country = "Denmark",
-            //        Phone = "66666666",
-            //        EmploymentDate = DateTime.Now,
-            //        BasePay = 0,
-            //        Notes = "Manager",
-            //        ImageUrl = "manager.jpg"
-            //    };
-            //    context.StaffMembers.Add(staffMember);
-            //    await context.SaveChangesAsync();
-            //}
+//if (await userManager.FindByEmailAsync(managerEmail) == null)
+//{
+//    manager = new IdentityUser();
+//    manager.UserName = managerEmail;
+//    manager.Email = managerEmail;
+//    manager.EmailConfirmed = true;
+//    await userManager.CreateAsync(manager, managerPassword);
+//    await userManager.AddToRoleAsync(manager, managerRole);
+//    Staff staffMember = new Staff
+//    {
+//        User = manager,
+//        UserId = manager.Id,
+//        FirstName = "Manager",
+//        LastName = "One",
+//        Address = "Address 6",
+//        City = "City 6",
+//        PostalCode = "66666",
+//        Country = "Denmark",
+//        Phone = "66666666",
+//        EmploymentDate = DateTime.Now,
+//        BasePay = 0,
+//        Notes = "Manager",
+//        ImageUrl = "manager.jpg"
+//    };
+//    context.StaffMembers.Add(staffMember);
+//    await context.SaveChangesAsync();
+//}
 
  --------------------------------------------
+
+From ApplicationDbContext.cs
+
+// Sample code to populate 8 Orders with OrderDetails
+for (int i = 1; i <= 8; i++)
+{
+var newOrder = new Order
+{
+    Customer = customers[i % customers.Count], // Cycle through customers for example
+    Staff = staffMembers[0], // Assuming one staff for simplicity
+    OrderDate = DateTime.Now.AddDays(-i), // Different dates for demonstration
+    Status = OrderStatus.Submitted, // Default status for all orders
+    CommentFromUser = $"Special instructions for order {i}",
+    OrderDetails = new List<OrderDetail>()
+};
+
+// Randomly select 4-6 products to create OrderDetails for each Order
+var selectedProducts = products.OrderBy(p => Guid.NewGuid()).Take(new Random().Next(4, 7));
+foreach (var product in selectedProducts)
+{
+    newOrder.OrderDetails.Add(new OrderDetail
+    {
+        Order = newOrder,
+        ProductInOrder = product,
+        Quantity = new Random().Next(1, 5), // Random quantity for demonstration
+        Price = product.Price
+    });
+}
+
+orders.Add(newOrder);
+}
+

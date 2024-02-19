@@ -22,7 +22,14 @@
             @Html.DisplayNameFor(model => model.Order.Staff)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Order.Staff.Id)
+            @if (Model.Order.Staff!.Id != null)
+            {
+                @Html.DisplayFor(model => model.Order.Staff!.Id)
+            }
+            else
+            {
+                <p>Not applicable</p>
+            }
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Order.OrderDate)

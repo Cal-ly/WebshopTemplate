@@ -22,8 +22,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     public DbSet<OrderDetail> OrderDetails { get; set; }
     public DbSet<Basket> Baskets { get; set; }
 
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
 
@@ -163,20 +162,3 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
         #endregion
     }
 }
-        //#region Relationship Customer - Company
-        //modelBuilder.Entity<Customer>()
-        //    .HasOne(c => c.RepresentingCompany) // Each Customer has one Company
-        //    .WithMany(co => co.Representatives) // Company has many Customers
-        //    .HasForeignKey(c => c.CompanyId); // ForeignKey in Customer pointing to Company
-        //modelBuilder.Entity<Customer>()
-        //    .HasIndex(c => c.CompanyId); // Index on CompanyId in Customer
-        //modelBuilder.Entity<Customer>()
-        //    .Property(c => c.CompanyId) // CompanyId in Customer
-        //    .IsRequired(false); // Is not required
-        //modelBuilder.Entity<Customer>()
-        //    .Property(c => c.CompanyId) // CompanyId in Customer
-        //    .HasDefaultValue(null); // Default value is null
-        //modelBuilder.Entity<Customer>()
-        //    .Property(c => c.CompanyId) // CompanyId in Customer
-        //    .ValueGeneratedNever(); // Value is never generated
-        //#endregion

@@ -19,6 +19,7 @@ namespace WebshopTemplate.Pages.Orders
             _context = context;
         }
 
+        [BindProperty]
         public IList<Order> Order { get;set; } = default!;
 
         public async Task OnGetAsync()

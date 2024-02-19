@@ -15,7 +15,7 @@
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Order> Get(string id)
+        public async Task<Order?> Get(string id)
         {
             //return await _context.Orders
             //    .Include(o => o.OrderDetails)
