@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebshopTemplate.DTO;
+using WebshopTemplate.Models.DTO;
 
 namespace WebshopTemplate.Interfaces
 {

@@ -2,97 +2,117 @@
 {
     public class BasketService : IBasketService
     {
-        private readonly IProductService IProductService;
-        private readonly HttpContext httpContext;
-        public string BasketId { get; set; }
-        public string ProductId { get; set; }
-        public int Quantity { get; set; }
-        public string UserId { get; set; } = "Session Guest";
-        public string SessionBasketId { get; set; } = "Session Guest";
+        private readonly IProductService _productService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public BasketService(IProductService iproductservice, string basketId, string productId, int quantity, HttpContext httpContext)
+        public BasketService(IProductService productService, IHttpContextAccessor httpContextAccessor)
         {
-            IProductService = iproductservice;
-            BasketId = basketId;
-            ProductId = productId;
-            Quantity = quantity;
-            this.httpContext = httpContext;
+            _productService = productService ?? throw new ArgumentNullException(nameof(productService));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
-        public Task<Basket> GetBasketAsync(string basketId)
+        private ISession Session => _httpContextAccessor.HttpContext!.Session;
+        private string GetBasketId() => Session.GetString("BasketId") ?? Guid.NewGuid().ToString();
+
+        public async Task<Basket> GetBasketAsync()
         {
-            var basket = httpContext.Session.GetBasket(basketId);
+            var basketId = GetBasketId();
+            var basket = Session.GetBasket(basketId);
             if (basket == null)
             {
-                basket = new Basket { Id = basketId, CustomerId = UserId };
-                httpContext.Session.SetBasket(basketId, basket);
+                basket = new Basket { Id = basketId };
+                Session.SetBasket(basketId, basket);
             }
-            return Task.FromResult(basket);
+            return await Task.FromResult(basket);
         }
 
-        public async Task AddBasketItemAsync(string basketId, string productId, int quantity)
+        public async Task AddBasketItemAsync(string productId, int quantity)
         {
-            var basket = await GetBasketAsync(basketId);
-            var product = await IProductService.GetProductByIdAsync(productId);
-            var basketItem = new BasketItem { BasketId = basketId, ProductId = productId, Quantity = quantity, ProductInBasket = product };
+            var basket = await GetBasketAsync();
+            var product = await _productService.GetProductByIdAsync(productId);
+            if (product == null) throw new InvalidOperationException("Product not found");
 
-            if (basket != null && product != null)
+            var basketItem = basket.Items.FirstOrDefault(i => i.ProductId == productId);
+            if (basketItem != null)
             {
-                basket.Items.Add(basketItem);
-                httpContext.Session.SetBasket(basketId, basket);
+                basketItem.Quantity += quantity;
             }
             else
             {
-                throw new Exception("Basket or product not found");
+                basket.Items.Add(new BasketItem { ProductId = productId, Quantity = quantity, ProductInBasket = product });
             }
-            await httpContext.Session.CommitAsync();
+            Session.SetBasket(basket.Id, basket);
         }
 
-        public async Task RemoveBasketItemAsync(string basketId, string productId)
+        public async Task RemoveBasketItemAsync(string productId)
         {
-            var basket = await GetBasketAsync(basketId);
-            var basketItem = basket.Items.FirstOrDefault(item => item.ProductId == productId);
-
+            var basket = await GetBasketAsync();
+            var basketItem = basket.Items.FirstOrDefault(i => i.ProductId == productId);
             if (basketItem != null)
             {
-                basketItem.Quantity--;
-
-                if (basketItem.Quantity <= 0)
+                if (basketItem.Quantity > 1)
+                {
+                    --basketItem.Quantity;
+                }
+                else
                 {
                     basket.Items.Remove(basketItem);
                 }
-
-                httpContext.Session.SetBasket(basketId, basket);
+                Session.SetBasket(basket.Id, basket);
             }
         }
 
-        public void TransferSessionBasketToUser(string userId, string sessionBasketId)
+        public async Task TransferSessionBasketToUserAsync(string userId)
         {
-            // Get the session basket
-            var sessionBasket = httpContext.Session.GetBasket(sessionBasketId);
-
-            if (sessionBasket != null)
+            var basket = await GetBasketAsync();
+            if (basket.CustomerId == null || basket.CustomerId == "Session Guest")
             {
-                // Set the basket for the user
-                httpContext.Session.SetBasket(userId, sessionBasket);
-
-                // Remove the session basket
-                httpContext.Session.Remove(sessionBasketId);
+                basket.CustomerId = userId;
+                Session.SetBasket(basket.Id, basket);
             }
         }
-        public void TransferUserBasketToSession(string userId, string sessionBasketId)
+
+        public async Task CreateBasketForSessionGuestAsync()
         {
-            // Get the user basket
-            var userBasket = httpContext.Session.GetBasket(userId);
-
-            if (userBasket != null)
+            var basket = await GetBasketAsync();
+            if (basket.CustomerId == null)
             {
-                // Set the basket for the session
-                httpContext.Session.SetBasket(sessionBasketId, userBasket);
-
-                // Remove the user basket
-                httpContext.Session.Remove(userId);
+                basket.CustomerId = "Session Guest";
+                Session.SetBasket(basket.Id, basket);
             }
+        }
+
+        //public async Task CreateOrderFromBasket()
+        //{
+        //    var basket = await GetBasketAsync();
+        //    var order = new Order
+        //    {
+        //        CustomerId = basket.CustomerId,
+        //        OrderDate = DateTime.UtcNow,
+        //        Status = OrderStatus.Submitted, // Set initial order status
+        //        OrderDetails = new List<OrderDetail>(),
+        //    };
+        //
+        //    foreach (var item in basket.Items)
+        //    {
+        //        order.OrderDetails.Add(new OrderDetail
+        //        {
+        //            ProductId = item.ProductId,
+        //            Quantity = item.Quantity,
+        //            Price = item.ProductInBasket.Price,
+        //        });
+        //    }
+        //
+        //    // Calculate the total price of the order if needed or perform additional processing
+        //    _context.Orders.Add(order);
+        //    await _context.SaveChangesAsync();
+        //}
+
+        public async Task ClearBasketAsync()
+        {
+            var basketId = GetBasketId();
+            Session.Remove(basketId);
+            await Task.CompletedTask;
         }
     }
 }

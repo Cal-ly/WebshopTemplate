@@ -1,24 +1,19 @@
 global using Microsoft.AspNetCore.Authentication;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Builder;
-global using Microsoft.AspNetCore.Builder.Extensions;
 global using Microsoft.AspNetCore.Hosting;
-global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 global using Microsoft.AspNetCore.Identity.UI.Services;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Mvc.RazorPages;
-global using Microsoft.AspNetCore.Mvc.ViewFeatures;
-global using Microsoft.AspNetCore.Routing;
-global using Microsoft.AspNetCore.Routing.Template;
-global using Microsoft.AspNetCore.StaticFiles;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Infrastructure;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Logging;
+global using Newtonsoft.Json;
 global using System;
 global using System.Collections.Generic;
 global using System.ComponentModel.DataAnnotations;
@@ -27,15 +22,11 @@ global using System.Diagnostics;
 global using System.Linq;
 global using System.Threading.Tasks;
 global using WebshopTemplate.Data;
-global using WebshopTemplate.Seeddata;
-global using WebshopTemplate.Models;
+global using WebshopTemplate.Models.DTO;
+global using WebshopTemplate.Services.Extensions;
 global using WebshopTemplate.Interfaces;
-global using WebshopTemplate.Repositories;
-global using WebshopTemplate.Services;
-global using WebshopTemplate.DTO;
-global using WebshopTemplate.Pages.Analytics;
-global using WebshopTemplate.Helpers;
-global using WebshopTemplate.Pages;
+global using WebshopTemplate.Models;
+global using WebshopTemplate.Seeddata;
 
 namespace WebshopTemplate;
 public static class Program
@@ -51,16 +42,29 @@ public static class Program
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
+        builder.Services.AddSession(options =>
+        {
+            options.IdleTimeout = TimeSpan.FromMinutes(30);
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+            options.Cookie.Name = ".WebshopTemplate.Session";
+            // options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.IOTimeout = TimeSpan.FromMinutes(30);
+            options.Cookie.SameSite = SameSiteMode.None; //.Strict; should be strict, but strict is not supported by all browsers and we are in a development environment
+
+        });
+
         builder.Services.Configure<IdentityOptions>(options =>
         {
+            // Password settings
             options.SignIn.RequireConfirmedAccount = false;
-
+            // Password settings
             options.Password.RequireDigit = false;
             options.Password.RequireNonAlphanumeric = false;
             options.Password.RequiredLength = 4;
             options.Password.RequireUppercase = false;
             options.Password.RequireLowercase = false;
-
+            // User settings
             options.User.RequireUniqueEmail = true;
             options.User.AllowedUserNameCharacters =
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
@@ -71,7 +75,7 @@ public static class Program
             // Cookie settings
             options.Cookie.HttpOnly = true;
             options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-
+            // If the LoginPath isn't set, ASP.NET Core defaults the path to /Account/Login.
             options.LoginPath = "/Identity/Account/Login";
             options.AccessDeniedPath = "/Identity/Account/AccessDenied";
             options.SlidingExpiration = true;
@@ -97,6 +101,7 @@ public static class Program
         }
 
         app.UseHttpsRedirection();
+        app.UseSession();
         app.UseStaticFiles();
         app.UseRouting();
         app.UseAuthentication();
@@ -149,7 +154,7 @@ public static class Program
             }
 
             DbInitializer DatabaseInitializer = new DbInitializer(context, userManager);
-            await DatabaseInitializer.SeedUserDatabase();
+            await DatabaseInitializer.SeedDatabaseUser();
         }
         app.Run();
     }

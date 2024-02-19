@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace WebshopTemplate.Helpers
+﻿namespace WebshopTemplate.Services.Extensions
 {
     // Extension method to set the basket in session
     public static class SessionExtensions

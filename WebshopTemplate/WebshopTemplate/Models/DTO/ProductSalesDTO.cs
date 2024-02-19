@@ -1,4 +1,4 @@
-﻿namespace WebshopTemplate.DTO
+﻿namespace WebshopTemplate.Models.DTO
 {
     public class ProductSalesDTO
     {

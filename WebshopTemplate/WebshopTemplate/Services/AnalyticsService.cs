@@ -1,4 +1,4 @@
-﻿using WebshopTemplate.DTO;
+﻿using WebshopTemplate.Models.DTO;
 
 namespace WebshopTemplate.Services
 {
