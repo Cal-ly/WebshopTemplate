@@ -5,8 +5,8 @@ namespace WebshopTemplate.Seeddata
 {
     public class DbInitializer
     {
-        private ApplicationDbContext _context;
-        private UserManager<IdentityUser> _userManager;
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
         public DbInitializer(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
