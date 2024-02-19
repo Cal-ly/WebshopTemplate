@@ -1,4 +1,6 @@
-﻿namespace WebshopTemplate.Services
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace WebshopTemplate.Services
 {
     public class BasketService : IBasketService
     {

@@ -22,7 +22,7 @@ global using System.Diagnostics;
 global using System.Linq;
 global using System.Threading.Tasks;
 global using WebshopTemplate.Data;
-global using WebshopTemplate.Areas.Identity.Data.Seeddata;
+global using WebshopTemplate.Seeddata;
 global using WebshopTemplate.Models;
 global using WebshopTemplate.Interfaces;
 global using WebshopTemplate.Repositories;
@@ -96,7 +96,6 @@ public static class Program
                     await roleManager.CreateAsync(new IdentityRole(role));
                 }
             }
-
         }
 
         using (var scope = app.Services.CreateScope())

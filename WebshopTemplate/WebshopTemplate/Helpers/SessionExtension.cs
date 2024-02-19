@@ -16,5 +16,4 @@ namespace WebshopTemplate.Helpers
             return basketString == null ? null : JsonConvert.DeserializeObject<Basket>(basketString);
         }
     }
-
 }

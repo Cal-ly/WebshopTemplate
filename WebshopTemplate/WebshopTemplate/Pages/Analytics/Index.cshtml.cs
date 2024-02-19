@@ -11,9 +11,10 @@ namespace WebshopTemplate.Pages.Analytics
         public IndexModel(IAnalyticsService analyticsService)
         {
             _analyticsService = analyticsService;
+            TopSellingProducts = [];
         }
 
-        public async Task OnGetAsync()
+        public async Task OnGetAsync() // This will show the total sales and the top selling products when page is loaded
         {
             TotalSales = await _analyticsService.GetTotalSalesAsync(DateTime.Today);
             TopSellingProducts = await _analyticsService.GetTopSellingProductsAsync(DateTime.Today.AddDays(-30), DateTime.Today);
