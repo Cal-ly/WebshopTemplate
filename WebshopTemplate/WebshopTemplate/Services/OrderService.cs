@@ -32,7 +32,7 @@ namespace WebshopTemplate.Services
                 {
                     ProductId = item.ProductId,
                     Quantity = item.Quantity,
-                    Price = item.Product.Price, // Assuming Price is a property of Product
+                    Price = item.ProductInBasket.Price,
                 });
             }
 

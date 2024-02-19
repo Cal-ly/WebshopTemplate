@@ -11,6 +11,7 @@
 
         public int Quantity { get; set; }
         public string ProductId { get; set; } = null!;
-        public Product Product { get; set; } = null!; // Navigation property for the product
+        [ForeignKey("ProductId")]
+        public Product ProductInBasket { get; set; } = null!; // Navigation property for the product
     }
 }

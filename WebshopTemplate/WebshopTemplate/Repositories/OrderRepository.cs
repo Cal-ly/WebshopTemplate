@@ -19,7 +19,7 @@
         {
             //return await _context.Orders
             //    .Include(o => o.OrderDetails)
-            //    .ThenInclude(od => od.Product)
+            //    .ThenInclude(od => od.ProductInOrder)
             //    .FirstOrDefaultAsync(o => o.Id == id);
             return await _context.Orders.FindAsync(id);
         }

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace WebshopTemplate.Models
+﻿namespace WebshopTemplate.Models
 {
     public class Order
     {

@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using WebshopTemplate.Data;
 using WebshopTemplate.Models;
 
-namespace WebshopTemplate.Pages.Orders
+namespace WebshopTemplate.Pages.Companies
 {
     public class EditModel : PageModel
     {
@@ -21,7 +21,7 @@ namespace WebshopTemplate.Pages.Orders
         }
 
         [BindProperty]
-        public Order Order { get; set; } = default!;
+        public Company Company { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(string id)
         {
@@ -30,14 +30,12 @@ namespace WebshopTemplate.Pages.Orders
                 return NotFound();
             }
 
-            var order =  await _context.Orders.FirstOrDefaultAsync(m => m.Id == id);
-            if (order == null)
+            var company =  await _context.Companies.FirstOrDefaultAsync(m => m.Id == id);
+            if (company == null)
             {
                 return NotFound();
             }
-            Order = order;
-           ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "Id");
-           ViewData["StaffId"] = new SelectList(_context.Staffers, "Id", "Id");
+            Company = company;
             return Page();
         }
 
@@ -50,7 +48,7 @@ namespace WebshopTemplate.Pages.Orders
                 return Page();
             }
 
-            _context.Attach(Order).State = EntityState.Modified;
+            _context.Attach(Company).State = EntityState.Modified;
 
             try
             {
@@ -58,7 +56,7 @@ namespace WebshopTemplate.Pages.Orders
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!OrderExists(Order.Id))
+                if (!CompanyExists(Company.Id))
                 {
                     return NotFound();
                 }
@@ -71,9 +69,9 @@ namespace WebshopTemplate.Pages.Orders
             return RedirectToPage("./Index");
         }
 
-        private bool OrderExists(string id)
+        private bool CompanyExists(string id)
         {
-            return _context.Orders.Any(e => e.Id == id);
+            return _context.Companies.Any(e => e.Id == id);
         }
     }
 }

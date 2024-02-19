@@ -147,42 +147,8 @@ public static class Program
                 await userManager.AddToRoleAsync(admin, adminRole);
             }
 
-            string managerRole = "Manager";
-            string managerEmail = "manager@manager.com";
-            string managerPassword = "1234";
-
-            var manager = await userManager.FindByEmailAsync(managerEmail.Normalize());
-
-            if (await userManager.FindByEmailAsync(managerEmail) == null)
-            {
-                manager = new IdentityUser();
-                manager.UserName = managerEmail;
-                manager.Email = managerEmail;
-                manager.EmailConfirmed = true;
-                await userManager.CreateAsync(manager, managerPassword);
-                await userManager.AddToRoleAsync(manager, managerRole);
-                Staff staffMember = new Staff
-                {
-                    User = manager,
-                    UserId = manager.Id,
-                    FirstName = "Manager",
-                    LastName = "One",
-                    Address = "Address 6",
-                    City = "City 6",
-                    PostalCode = "66666",
-                    Country = "Denmark",
-                    Phone = "66666666",
-                    EmploymentDate = DateTime.Now,
-                    BasePay = 0,
-                    Notes = "Manager",
-                    ImageUrl = "manager.jpg"
-                };
-                context.StaffMembers.Add(staffMember);
-                await context.SaveChangesAsync();
-            }
-
             DbInitializer DatabaseInitializer = new DbInitializer(context, userManager);
-            await DatabaseInitializer.SeedDatabase();
+            await DatabaseInitializer.SeedUserDatabase();
         }
         app.Run();
     }

@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using WebshopTemplate.Data;
 using WebshopTemplate.Models;
 
-namespace WebshopTemplate.Pages.Orders
+namespace WebshopTemplate.Pages.Products
 {
     public class EditModel : PageModel
     {
@@ -21,7 +21,7 @@ namespace WebshopTemplate.Pages.Orders
         }
 
         [BindProperty]
-        public Order Order { get; set; } = default!;
+        public Product Product { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(string id)
         {
@@ -30,14 +30,13 @@ namespace WebshopTemplate.Pages.Orders
                 return NotFound();
             }
 
-            var order =  await _context.Orders.FirstOrDefaultAsync(m => m.Id == id);
-            if (order == null)
+            var product =  await _context.Products.FirstOrDefaultAsync(m => m.Id == id);
+            if (product == null)
             {
                 return NotFound();
             }
-            Order = order;
-           ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "Id");
-           ViewData["StaffId"] = new SelectList(_context.Staffers, "Id", "Id");
+            Product = product;
+           ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id");
             return Page();
         }
 
@@ -50,7 +49,7 @@ namespace WebshopTemplate.Pages.Orders
                 return Page();
             }
 
-            _context.Attach(Order).State = EntityState.Modified;
+            _context.Attach(Product).State = EntityState.Modified;
 
             try
             {
@@ -58,7 +57,7 @@ namespace WebshopTemplate.Pages.Orders
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!OrderExists(Order.Id))
+                if (!ProductExists(Product.Id))
                 {
                     return NotFound();
                 }
@@ -71,9 +70,9 @@ namespace WebshopTemplate.Pages.Orders
             return RedirectToPage("./Index");
         }
 
-        private bool OrderExists(string id)
+        private bool ProductExists(string id)
         {
-            return _context.Orders.Any(e => e.Id == id);
+            return _context.Products.Any(e => e.Id == id);
         }
     }
 }

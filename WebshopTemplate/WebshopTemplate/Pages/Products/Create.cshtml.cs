@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using WebshopTemplate.Data;
 using WebshopTemplate.Models;
 
-namespace WebshopTemplate.Pages.Orders
+namespace WebshopTemplate.Pages.Products
 {
     public class CreateModel : PageModel
     {
@@ -21,13 +21,12 @@ namespace WebshopTemplate.Pages.Orders
 
         public IActionResult OnGet()
         {
-        ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "Id");
-        ViewData["StaffId"] = new SelectList(_context.Staffers, "Id", "Id");
+        ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id");
             return Page();
         }
 
         [BindProperty]
-        public Order Order { get; set; } = default!;
+        public Product Product { get; set; } = default!;
 
         // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
         public async Task<IActionResult> OnPostAsync()
@@ -37,7 +36,7 @@ namespace WebshopTemplate.Pages.Orders
                 return Page();
             }
 
-            _context.Orders.Add(Order);
+            _context.Products.Add(Product);
             await _context.SaveChangesAsync();
 
             return RedirectToPage("./Index");

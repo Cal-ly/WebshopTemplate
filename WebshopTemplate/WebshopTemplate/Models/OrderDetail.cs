@@ -13,7 +13,7 @@
         // The product that was ordered also Foreign key for Product
         public string ProductId { get; set; } = null!;
         [ForeignKey("ProductId")]
-        public virtual Product Product { get; set; } = null!;
+        public virtual Product ProductInOrder { get; set; } = null!;
 
         public int Quantity { get; set; }
         public decimal Price { get; set; }
