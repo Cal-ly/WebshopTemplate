@@ -34,12 +34,12 @@
             var customers = new List<Customer>();
             var customerUsers = new List<IdentityUser>
                 {
-                    new IdentityUser { UserName = "JohnDead", Email = "john@mail.com" },
-                    new IdentityUser { UserName = "JaneDead", Email = "jane@mail.com" },
-                    new IdentityUser { UserName = "EpicDaddy", Email = "daddy@mail.com" },
-                    new IdentityUser { UserName = "EpicMommy", Email = "mommy@mail.com" },
-                    new IdentityUser { UserName = "EpicSonny", Email = "sonny@mail.com" },
-                    new IdentityUser { UserName = "EpicSunny", Email = "sunny@mail.com" }
+                    new IdentityUser { UserName = "john@mail.com", Email = "john@mail.com", EmailConfirmed = true },
+                    new IdentityUser { UserName = "jane@mail.com", Email = "jane@mail.com", EmailConfirmed = true },
+                    new IdentityUser { UserName = "daddy@mail.com", Email = "daddy@mail.com", EmailConfirmed = true },
+                    new IdentityUser { UserName = "mommy@mail.com", Email = "mommy@mail.com" , EmailConfirmed = true},
+                    new IdentityUser { UserName = "sonny@mail.com", Email = "sonny@mail.com" , EmailConfirmed = true},
+                    new IdentityUser { UserName = "sunny@mail.com", Email = "sunny@mail.com" , EmailConfirmed = true}
                 };
 
             for (int i = 0; i < customerUsers.Count; i++)
@@ -58,9 +58,9 @@
             var staffMembers = new List<Staff>();
             var staffUsers = new List<IdentityUser>
                 {
-                    new IdentityUser { UserName = "StaffJane", Email = "staff1@staff.com" },
-                    new IdentityUser { UserName = "StaffJohn", Email = "staff2@staff.com" },
-                    new IdentityUser { UserName = "StaffMitch", Email = "staff3@staff.com" }
+                    new IdentityUser { UserName = "staff1@staff.com", Email = "staff1@staff.com", EmailConfirmed = true },
+                    new IdentityUser { UserName = "staff2@staff.com", Email = "staff2@staff.com" , EmailConfirmed = true},
+                    new IdentityUser { UserName = "staff3@staff.com", Email = "staff3@staff.com" , EmailConfirmed = true}
                 };
 
             for (int i = 0; i < staffUsers.Count; i++)

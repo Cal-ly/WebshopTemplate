@@ -1,6 +1,7 @@
 global using Microsoft.AspNetCore.Authentication;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Builder;
+global using Microsoft.AspNetCore.Builder.Extensions;
 global using Microsoft.AspNetCore.Hosting;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Identity;
@@ -8,6 +9,10 @@ global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 global using Microsoft.AspNetCore.Identity.UI.Services;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Mvc.RazorPages;
+global using Microsoft.AspNetCore.Mvc.ViewFeatures;
+global using Microsoft.AspNetCore.Routing;
+global using Microsoft.AspNetCore.Routing.Template;
+global using Microsoft.AspNetCore.StaticFiles;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Infrastructure;
 global using Microsoft.Extensions.Configuration;
@@ -31,7 +36,6 @@ global using WebshopTemplate.DTO;
 global using WebshopTemplate.Pages.Analytics;
 global using WebshopTemplate.Helpers;
 
-
 namespace WebshopTemplate;
 public static class Program
 {
@@ -42,20 +46,42 @@ public static class Program
 
         builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
-        builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+        builder.Services.AddDefaultIdentity<IdentityUser>()
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>();
+
+        builder.Services.Configure<IdentityOptions>(options =>
         {
             options.SignIn.RequireConfirmedAccount = false;
+
             options.Password.RequireDigit = false;
             options.Password.RequireNonAlphanumeric = false;
             options.Password.RequiredLength = 4;
             options.Password.RequireUppercase = false;
             options.Password.RequireLowercase = false;
-        })
-            .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
 
-        builder.Services.AddControllersWithViews();
+            options.User.RequireUniqueEmail = true;
+            options.User.AllowedUserNameCharacters =
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+        });
+
+        builder.Services.ConfigureApplicationCookie(options =>
+        {
+            // Cookie settings
+            options.Cookie.HttpOnly = true;
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+
+            options.LoginPath = "/Identity/Account/Login";
+            options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+            options.SlidingExpiration = true;
+        });
+
+
+
         builder.Services.AddRazorPages();
+        builder.Services.AddControllersWithViews();
+
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -72,8 +98,8 @@ public static class Program
         app.UseHttpsRedirection();
         app.UseStaticFiles();
         app.UseRouting();
-        app.UseAuthorization();
         app.UseAuthentication();
+        app.UseAuthorization();
         app.MapRazorPages();
 
         using (var scope = app.Services.CreateScope())
