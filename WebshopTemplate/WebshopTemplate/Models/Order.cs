@@ -3,13 +3,13 @@
     public class Order
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public string Id { get; set; } = null!; // Primary key for the order - ID of the order in the database
+        public string? Id { get; set; } // Primary key for the order - ID of the order in the database
 
         // Foreign key for User. This is the ID of the Customer who placed the order
-        public string CustomerId { get; set; } = null!;
+        public string? CustomerId { get; set; }
         // Navigation property for User
         [ForeignKey("CustomerId")]
-        public virtual Customer Customer { get; set; } = null!; // The customer who placed the order. Is virtual to allow for lazy loading. Lazy loading is the concept of delaying the loading of related data until you specifically request for it. This can be useful when you have a large amount of data and you don't want to load it all at once. It can also be useful when you want to avoid circular references. Lazy loading is enabled by default in Entity Framework Core.
+        public virtual Customer? Customer { get; set; } // The customer who placed the order. Is virtual to allow for lazy loading. Lazy loading is the concept of delaying the loading of related data until you specifically request for it. This can be useful when you have a large amount of data and you don't want to load it all at once. It can also be useful when you want to avoid circular references. Lazy loading is enabled by default in Entity Framework Core.
 
         // Foreign key for Staff. This is the ID of the Staff member who handled the order
         public string? StaffId { get; set; }
@@ -20,15 +20,24 @@
         public OrderStatus Status { get; set; } = new OrderStatus(); // Status of the order (Submitted, Pending, Received, Confirmed, Processing, Ready, Shipped, Delivered, Cancelled)
         public string CommentFromUser { get; set; } = string.Empty;
         public string CommentFromShop { get; set; } = string.Empty;
-        public List<OrderDetail>? OrderDetails { get; set; } = []; // List of order details - Contains the products and quantities of the order - List initialized to avoid null reference exceptions, but can be empty. Could also be initialized in the constructor
+        public List<OrderDetail> OrderDetails { get; set; } = []; // List of order details - Contains the products and quantities of the order - List initialized to avoid null reference exceptions, but can be empty. Could also be initialized in the constructor
         public decimal Total => OrderDetails?.Sum(od => od.Price * od.Quantity) ?? 0; // Total price of the order, calculated from the order details in order to avoid inconsistencies
         public int StatusCode // Property to store the status of the order as an integer in the database
         {
             get => (int)Status;
             set => Status = (OrderStatus)value;
         }
+
+        // Guest details
+        public string? GuestEmail { get; set; }
+        public string? GuestName { get; set; }
+        public string? GuestAddress { get; set; }
+        public string? GuestPostalCode { get; set; }
+        public string? GuestCity { get; set; }
+        public string? GuestPhone { get; set; }
     }
-    public enum OrderStatus // Enum for the status of the order
+    // Enum for the status of the order with integer values for the different statuses
+    public enum OrderStatus
     {
         Submitted = 1,
         Pending = 2,

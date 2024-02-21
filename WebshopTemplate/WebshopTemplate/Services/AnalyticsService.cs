@@ -15,7 +15,7 @@ namespace WebshopTemplate.Services
             totalSales +=
                 await _context.Orders
                     .Where(o => o.OrderDate == date.Date)
-                        .SumAsync(o => o.OrderDetails!.Sum(od => od.Quantity * od.ProductInOrder.Price));
+                        .SumAsync(o => o.OrderDetails!.Sum(od => od.Quantity * od.ProductInOrder!.Price));
             return totalSales;
         }
 
@@ -25,20 +25,20 @@ namespace WebshopTemplate.Services
             totalSales +=
                 await _context.Orders
                     .Where(o => o.OrderDate >= dateStart.Date && o.OrderDate <= dateEnd.Date)
-                        .SumAsync(o => o.OrderDetails!.Sum(od => od.Quantity * od.ProductInOrder.Price));
+                        .SumAsync(o => o.OrderDetails!.Sum(od => od.Quantity * od.ProductInOrder!.Price));
             return totalSales;
         }
 
         public async Task<List<ProductSalesDTO>> GetTopSellingProductsAsync(DateTime startDate, DateTime endDate)
         {
             return await _context.OrderDetails
-                .Where(od => od.Order.OrderDate >= startDate && od.Order.OrderDate <= endDate)
+                .Where(od => od.Order!.OrderDate >= startDate && od.Order.OrderDate <= endDate && od.Order != null)
                 .GroupBy(od => od.ProductId)
                 .Select(group => new ProductSalesDTO
                 {
                     ProductId = group.Key,
                     TotalQuantitySold = group.Sum(od => od.Quantity),
-                    TotalSales = group.Sum(od => od.Quantity * od.ProductInOrder.Price)
+                    TotalSales = group.Sum(od => od.Quantity * od.ProductInOrder!.Price)
                 })
                 .OrderByDescending(dto => dto.TotalSales)
                 .ToListAsync();

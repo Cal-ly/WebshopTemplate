@@ -5,7 +5,7 @@ using System;
 
 namespace WebshopTemplate.Initializers
 {
-    public static class DbInitializer
+    public static class Initializer
     {
         public static async Task SeedDatabaseUser(IServiceProvider serviceProvider)
         {
@@ -24,22 +24,22 @@ namespace WebshopTemplate.Initializers
 
             // Define companies
             var companies = new List<Company>
-                {
-                    new Company { Name = "Dead'R'Us", Address = "Street 1", City = "City A", PostalCode = "12345", Country = "Denmark", Email = "contact@companya.com", Phone = "12345678", Website = "www.companya.com" },
-                    new Company { Name = "FuneralHome", Address = "Street 2", City = "City B", PostalCode = "23456", Country = "Denmark", Email = "contact@companyb.com", Phone = "87654321", Website = "www.companyb.com" }
-                };
+            {
+                new Company { Name = "Dead'R'Us", Address = "Street 1", City = "City A", PostalCode = "12345", Country = "Denmark", Email = "contact@companya.com", Phone = "12345678", Website = "www.companya.com" },
+                new Company { Name = "FuneralHome", Address = "Street 2", City = "City B", PostalCode = "23456", Country = "Denmark", Email = "contact@companyb.com", Phone = "87654321", Website = "www.companyb.com" }
+            };
 
             // Define customers
             var customers = new List<Customer>();
             var customerUsers = new List<IdentityUser>
-                {
-                    new IdentityUser { UserName = "john@mail.com", Email = "john@mail.com", EmailConfirmed = true },
-                    new IdentityUser { UserName = "jane@mail.com", Email = "jane@mail.com", EmailConfirmed = true },
-                    new IdentityUser { UserName = "daddy@mail.com", Email = "daddy@mail.com", EmailConfirmed = true },
-                    new IdentityUser { UserName = "mommy@mail.com", Email = "mommy@mail.com" , EmailConfirmed = true},
-                    new IdentityUser { UserName = "sonny@mail.com", Email = "sonny@mail.com" , EmailConfirmed = true},
-                    new IdentityUser { UserName = "sunny@mail.com", Email = "sunny@mail.com" , EmailConfirmed = true}
-                };
+            {
+                new IdentityUser { UserName = "john@mail.com", Email = "john@mail.com", EmailConfirmed = true },
+                new IdentityUser { UserName = "jane@mail.com", Email = "jane@mail.com", EmailConfirmed = true },
+                new IdentityUser { UserName = "daddy@mail.com", Email = "daddy@mail.com", EmailConfirmed = true },
+                new IdentityUser { UserName = "mommy@mail.com", Email = "mommy@mail.com" , EmailConfirmed = true},
+                new IdentityUser { UserName = "sonny@mail.com", Email = "sonny@mail.com" , EmailConfirmed = true},
+                new IdentityUser { UserName = "sunny@mail.com", Email = "sunny@mail.com" , EmailConfirmed = true}
+            };
 
             for (int i = 0; i < customerUsers.Count; i++)
             {
@@ -331,7 +331,7 @@ namespace WebshopTemplate.Initializers
                 new Product { Name = "Floral Wreath", Image = "floral_wreath.jpg", Description = "A charming wreath to adorn your door.", Price = 49.99m, Quantity = 20, Category = categories[4] },
             };
 
-            await context.SaveChangesAsync();
+            //await context.SaveChangesAsync();
 
             // Linking Products to Categories
             foreach (var category in categories)
@@ -346,7 +346,7 @@ namespace WebshopTemplate.Initializers
                 throw new ArgumentNullException($"{customer.FullName} - Customer Id is null");
             }
 
-            await context.SaveChangesAsync();
+            //await context.SaveChangesAsync();
 
             // Define Orders
             var orders = new List<Order>
@@ -390,7 +390,7 @@ namespace WebshopTemplate.Initializers
 
             await context.Orders.AddRangeAsync(orders);
 
-            await context.SaveChangesAsync();
+            //await context.SaveChangesAsync();
         }
     }
 }

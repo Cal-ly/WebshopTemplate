@@ -75,11 +75,15 @@ public static class Program
         app.UseAuthorization();
         app.MapRazorPages();
 
-        using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
-        var services = scope.ServiceProvider;
+        //using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        //var services = scope.ServiceProvider;
+        var services = app.Services.GetRequiredService<IServiceProvider>().CreateScope().ServiceProvider;
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureCreatedAsync();
         await RoleInitializer.SeedRoles(services);
         await AdminInitializer.SeedAdmin(services);
-        await DbInitializer.GodSeedDatabase(services);
+        await Initializer.GodSeedDatabase(services);
 
         app.Run();
     }

@@ -45,6 +45,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
         {
             entity.ToTable("Customers");
             entity.Property(c => c.Id).ValueGeneratedOnAdd();
+            entity.Property(c => c.CustomerCreated).HasDefaultValueSql("GETDATE()"); // Default value for CustomerCreated
             entity.HasIndex(c => c.Id);
             entity.HasOne(c => c.User)
                     .WithOne()
@@ -67,6 +68,7 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
         {
             entity.ToTable("Staffers");
             entity.Property(s => s.Id).ValueGeneratedOnAdd();
+            entity.Property(s => s.EmploymentDate).HasDefaultValueSql("GETDATE()"); // Default value for EmploymentDate
             entity.HasIndex(s => s.Id);
             entity.HasOne(s => s.User).WithOne().HasForeignKey<Staff>(s => s.UserId); // One-to-One relationship between Staff and IdentityUser
 
@@ -121,6 +123,9 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             entity.HasOne(p => p.Category) // Each Product has one Category
                     .WithMany(c => c.Products) // Category has many Products
                         .HasForeignKey(p => p.CategoryId); // ForeignKey in Product pointing to Category
+            //entity.HasMany(p => p.OrderDetails) // Product has many OrderDetails
+            //        .WithOne(od => od.ProductInOrder) // Each OrderDetail has one Product
+            //            .HasForeignKey(od => od.ProductId); // ForeignKey in OrderDetail pointing to Product
         });
         #endregion
 
@@ -160,5 +165,6 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             entity.HasOne(bi => bi.ProductInBasket).WithOne().HasForeignKey<BasketItem>(bi => bi.ProductId); // Each BasketItem has one Product
         });
         #endregion
+
     }
 }
