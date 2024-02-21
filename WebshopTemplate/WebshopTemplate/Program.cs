@@ -41,7 +41,9 @@ public static class Program
 
         builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
-        builder.Services.AddDefaultIdentity<IdentityUser>().AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+        builder.Services.AddDefaultIdentity<IdentityUser>()
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>();
 
         //builder.Services.AddSingleton<IAnalyticsService, AnalyticsService>();
         //builder.Services.AddSingleton<IBasketService, BasketService>();
