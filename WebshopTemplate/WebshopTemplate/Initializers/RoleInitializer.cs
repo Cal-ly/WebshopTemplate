@@ -6,7 +6,7 @@
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-            string[] roleNames = { "Admin", "Manager", "Member" };
+            string[] roleNames = { "Admin", "Manager", "SuperMember", "Member" };
             foreach (var roleName in roleNames)
             {
                 var roleExist = await roleManager.RoleExistsAsync(roleName);

@@ -50,11 +50,9 @@ public static class Program
         //builder.Services.AddSingleton<IOrderService, OrderService>();
         //builder.Services.AddSingleton<IProductService, ProductService>();
 
-
-
         builder.Services.Config();
-        builder.Services.AddRazorPages();
         builder.Services.AddControllersWithViews();
+        builder.Services.AddRazorPages();
 
         var app = builder.Build();
 
