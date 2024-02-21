@@ -1,5 +1,3 @@
-using WebshopTemplate.Models.DTO;
-
 namespace WebshopTemplate.Pages.Analytics
 {
     [Authorize(Roles = "Manager,Admin")]

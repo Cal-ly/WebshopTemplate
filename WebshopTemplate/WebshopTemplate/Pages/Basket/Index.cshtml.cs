@@ -23,7 +23,7 @@ namespace WebshopTemplate.Pages.Basket
 
         public async Task OnGetAsync()
         {
-            Basket = await _context.Basket.ToListAsync();
+            Basket = await _context.Baskets.ToListAsync();
         }
     }
 }

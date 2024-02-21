@@ -1,20 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
-using WebshopTemplate.Data;
-using WebshopTemplate.Models;
-
-namespace WebshopTemplate.Pages.Basket
+﻿namespace WebshopTemplate.Pages.Basket
 {
     public class DeleteModel : PageModel
     {
-        private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public DeleteModel(WebshopTemplate.Data.ApplicationDbContext context)
+        public DeleteModel(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -29,7 +19,7 @@ namespace WebshopTemplate.Pages.Basket
                 return NotFound();
             }
 
-            var basket = await _context.Basket.FirstOrDefaultAsync(m => m.Id == id);
+            var basket = await _context.Baskets.FirstOrDefaultAsync(m => m.Id == id);
 
             if (basket == null)
             {
@@ -49,11 +39,11 @@ namespace WebshopTemplate.Pages.Basket
                 return NotFound();
             }
 
-            var basket = await _context.Basket.FindAsync(id);
+            var basket = await _context.Baskets.FindAsync(id);
             if (basket != null)
             {
                 Basket = basket;
-                _context.Basket.Remove(Basket);
+                _context.Baskets.Remove(Basket);
                 await _context.SaveChangesAsync();
             }
 

@@ -1,8 +1,6 @@
 ﻿My ToDo over the project in bullet form:
 
 Important
-- [x] Implement config file
-
 - [x] Implement basket and basketId functionality
 - [x] Create realtion between basket and product
 - [x] Implement interface, services and repository for all classes

@@ -142,9 +142,9 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             entity.ToTable("Baskets");
             entity.Property(b => b.Id).ValueGeneratedOnAdd();
             entity.HasIndex(b => b.Id); // Index on Id in Basket
-            entity.HasOne(b => b.Id)
-                    .WithOne()
-                        .HasForeignKey<Basket>(c => c.CustomerId); // One-to-One relationship between Basket and Customer
+            entity.HasOne(b => b.Customer)
+                  .WithOne()
+                  .HasForeignKey<Basket>(b => b.CustomerId); // One-to-One relationship between Basket and Customer
             entity.HasMany(b => b.Items) // Basket has many BasketItems
                     .WithOne(bi => bi.Basket) // Each BasketItem has one Basket
                         .HasForeignKey(bi => bi.BasketId); // ForeignKey in BasketItem pointing to Basket

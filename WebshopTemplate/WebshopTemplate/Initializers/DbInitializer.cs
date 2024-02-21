@@ -1,24 +1,20 @@
 ﻿using WebshopTemplate.Models;
 using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace WebshopTemplate.Initializers
 {
-    public class DbInitializer
+    public static class DbInitializer
     {
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
-
-        public DbInitializer(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public static async Task SeedDatabaseUser(IServiceProvider serviceProvider)
         {
-            _context = context;
-            _userManager = userManager;
-        }
+            var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
 
-        public async Task SeedDatabaseUser()
-        {
-            ArgumentNullException.ThrowIfNull(_userManager);
+            ArgumentNullException.ThrowIfNull(userManager);
 
-            _context.Database.EnsureCreated();
+            context.Database.EnsureCreated();
 
             // Define IdentityUser password and roles
             string password = "1234";
@@ -47,15 +43,15 @@ namespace WebshopTemplate.Initializers
 
             for (int i = 0; i < customerUsers.Count; i++)
             {
-                var result = await _userManager.CreateAsync(customerUsers[i], password);
+                var result = await userManager.CreateAsync(customerUsers[i], password);
                 if (result.Succeeded)
                 {
-                    await _userManager.AddToRoleAsync(customerUsers[i], i < 5 ? superMemberRole : memberRole);
+                    await userManager.AddToRoleAsync(customerUsers[i], i < 5 ? superMemberRole : memberRole);
                 }
                 customers.Add(new Customer { UserId = customerUsers[i].Id, User = customerUsers[i], FirstName = "FirstName" + i, LastName = "LastName" + i, Address = "Address " + i, City = "City " + i, PostalCode = "PostalCode" + i, Country = "Denmark", Phone = "Phone" + i, RepresentingCompany = i < 4 ? companies[0] : companies[1] });
             }
 
-            await _context.Customers.AddRangeAsync(customers);
+            await context.Customers.AddRangeAsync(customers);
 
             // Define Staff
             var staffMembers = new List<Staff>();
@@ -68,18 +64,18 @@ namespace WebshopTemplate.Initializers
 
             for (int i = 0; i < staffUsers.Count; i++)
             {
-                var result = await _userManager.CreateAsync(staffUsers[i], password);
+                var result = await userManager.CreateAsync(staffUsers[i], password);
                 if (result.Succeeded)
                 {
-                    await _userManager.AddToRoleAsync(staffUsers[i], managerRole);
+                    await userManager.AddToRoleAsync(staffUsers[i], managerRole);
                 }
                 staffMembers.Add(new Staff { UserId = staffUsers[i].Id, User = staffUsers[i], FirstName = "StaffFirstName" + i, LastName = "StaffLastName" + i, Address = "Address " + (i + 6), City = "City " + (i + 6), PostalCode = "PostalCode" + (i + 6), Country = "Denmark", Phone = "Phone" + (i + 6) });
             }
 
-            await _context.Staffers.AddRangeAsync(staffMembers);
+            await context.Staffers.AddRangeAsync(staffMembers);
 
             //Add companies and customers to the database
-            await _context.Companies.AddRangeAsync(companies);
+            await context.Companies.AddRangeAsync(companies);
 
             // Add company representatives to the companies
             companies[0].Representatives.Add(customers[0]);
@@ -87,8 +83,14 @@ namespace WebshopTemplate.Initializers
             companies[1].Representatives.Add(customers[2]);
             companies[1].Representatives.Add(customers[3]);
         }
-        public async Task SeedDatabaseCategoryAndProducts()
+        public static async Task SeedDatabaseCategoryAndProducts(IServiceProvider serviceProvider)
         {
+            var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+
+            ArgumentNullException.ThrowIfNull(userManager);
+            ArgumentNullException.ThrowIfNull(context);
+
             // Define categories
             var categories = new List<Category>
             {
@@ -134,25 +136,31 @@ namespace WebshopTemplate.Initializers
                 category.Products = products.Where(p => p.Category == category).ToList();
             }
 
-            await _context.Categories.AddRangeAsync(categories);
+            await context.Categories.AddRangeAsync(categories);
         }
-        public async Task SeedDatabaseOrders()
+        public static async Task SeedDatabaseOrders(IServiceProvider serviceProvider)
         {
+            var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+
+            ArgumentNullException.ThrowIfNull(userManager);
+            ArgumentNullException.ThrowIfNull(context);
+
             // Define customers
-            var customers = await _context.Customers.ToListAsync();
+            var customers = await context.Customers.ToListAsync();
             if (customers.Count == 0 || customers.Count < 6)
             {
                 throw new ArgumentException("Customers - List is empty or has less than 6 members");
             }
 
             // Define Staff
-            var staffMembers = await _context.Staffers.ToListAsync();
+            var staffMembers = await context.Staffers.ToListAsync();
             if (staffMembers.Count == 0 || staffMembers.Count < 3)
             {
                 throw new ArgumentException("StaffMembers - List is empty or has less than 3 members");
             }
 
-            var products = await _context.Products.ToListAsync();
+            var products = await context.Products.ToListAsync();
             if (products.Count == 0 || products.Count < 16)
             {
                 throw new ArgumentException("Products - List is empty or has less than 16 members");
@@ -198,22 +206,24 @@ namespace WebshopTemplate.Initializers
                 order.OrderDetails = orderDetails.Where(od => od.Order == order).ToList();
             }
 
-            await _context.Orders.AddRangeAsync(orders);
-            await _context.SaveChangesAsync();
+            await context.Orders.AddRangeAsync(orders);
+            await context.SaveChangesAsync();
         }
-        public async Task SeedDatabaseStaged()
+        public static async Task SeedDatabaseStaged(IServiceProvider serviceProvider)
         {
-            await SeedDatabaseUser();
-            await SeedDatabaseCategoryAndProducts();
-            await SeedDatabaseOrders();
-
-            await _context.SaveChangesAsync();
+            await SeedDatabaseUser(serviceProvider);
+            await SeedDatabaseCategoryAndProducts(serviceProvider);
+            await SeedDatabaseOrders(serviceProvider);
         }
-        public async Task GodSeedDatabase()
+        public static async Task GodSeedDatabase(IServiceProvider serviceProvider)
         {
-            ArgumentNullException.ThrowIfNull(_userManager);
+            var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
 
-            _context.Database.EnsureCreated();
+            ArgumentNullException.ThrowIfNull(userManager);
+            ArgumentNullException.ThrowIfNull(context);
+
+            context.Database.EnsureCreated();
 
             // Define IdentityUser password and roles
             string password = "1234";
@@ -242,15 +252,15 @@ namespace WebshopTemplate.Initializers
 
             for (int i = 0; i < customerUsers.Count; i++)
             {
-                var result = await _userManager.CreateAsync(customerUsers[i], password);
+                var result = await userManager.CreateAsync(customerUsers[i], password);
                 if (result.Succeeded)
                 {
-                    await _userManager.AddToRoleAsync(customerUsers[i], i < 5 ? superMemberRole : memberRole);
+                    await userManager.AddToRoleAsync(customerUsers[i], i < 5 ? superMemberRole : memberRole);
                 }
                 customers.Add(new Customer { UserId = customerUsers[i].Id, User = customerUsers[i], FirstName = "FirstName" + i, LastName = "LastName" + i, Address = "Address " + i, City = "City " + i, PostalCode = "PostalCode" + i, Country = "Denmark", Phone = "Phone" + i, RepresentingCompany = i < 4 ? companies[0] : companies[1] });
             }
 
-            await _context.Customers.AddRangeAsync(customers);
+            await context.Customers.AddRangeAsync(customers);
 
             // Define Staff
             var staffMembers = new List<Staff>();
@@ -263,18 +273,18 @@ namespace WebshopTemplate.Initializers
 
             for (int i = 0; i < staffUsers.Count; i++)
             {
-                var result = await _userManager.CreateAsync(staffUsers[i], password);
+                var result = await userManager.CreateAsync(staffUsers[i], password);
                 if (result.Succeeded)
                 {
-                    await _userManager.AddToRoleAsync(staffUsers[i], managerRole);
+                    await userManager.AddToRoleAsync(staffUsers[i], managerRole);
                 }
                 staffMembers.Add(new Staff { UserId = staffUsers[i].Id, User = staffUsers[i], FirstName = "StaffFirstName" + i, LastName = "StaffLastName" + i, Address = "Address " + (i + 6), City = "City " + (i + 6), PostalCode = "PostalCode" + (i + 6), Country = "Denmark", Phone = "Phone" + (i + 6) });
             }
 
-            await _context.Staffers.AddRangeAsync(staffMembers);
+            await context.Staffers.AddRangeAsync(staffMembers);
 
             //Add companies and customers to the database
-            await _context.Companies.AddRangeAsync(companies);
+            await context.Companies.AddRangeAsync(companies);
 
             // Add company representatives to the companies
             companies[0].Representatives.Add(customers[0]);
@@ -321,20 +331,22 @@ namespace WebshopTemplate.Initializers
                 new Product { Name = "Floral Wreath", Image = "floral_wreath.jpg", Description = "A charming wreath to adorn your door.", Price = 49.99m, Quantity = 20, Category = categories[4] },
             };
 
+            await context.SaveChangesAsync();
+
             // Linking Products to Categories
             foreach (var category in categories)
             {
                 category.Products = products.Where(p => p.Category == category).ToList();
             }
 
-            await _context.Categories.AddRangeAsync(categories);
+            await context.Categories.AddRangeAsync(categories);
 
             foreach (var customer in customers.Where(customer => customer.Id == null))
             {
                 throw new ArgumentNullException($"{customer.FullName} - Customer Id is null");
             }
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             // Define Orders
             var orders = new List<Order>
@@ -376,9 +388,9 @@ namespace WebshopTemplate.Initializers
                 order.OrderDetails = orderDetails.Where(od => od.Order == order).ToList();
             }
 
-            await _context.Orders.AddRangeAsync(orders);
+            await context.Orders.AddRangeAsync(orders);
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
     }
 }

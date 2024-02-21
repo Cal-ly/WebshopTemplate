@@ -7,6 +7,7 @@ global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 global using Microsoft.AspNetCore.Identity.UI.Services;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Mvc.RazorPages;
+global using Microsoft.AspNetCore.Session;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Infrastructure;
 global using Microsoft.Extensions.Configuration;
@@ -27,6 +28,8 @@ global using WebshopTemplate.Extensions;
 global using WebshopTemplate.Interfaces;
 global using WebshopTemplate.Models;
 global using WebshopTemplate.Initializers;
+global using WebshopTemplate.Services;
+global using WebshopTemplate.Pages;
 
 namespace WebshopTemplate;
 public static class Program
@@ -38,15 +41,18 @@ public static class Program
 
         builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
-        //builder.Services.AddDefaultIdentity<IdentityUser>()
-        //    .AddRoles<IdentityRole>()
-        //    .AddEntityFrameworkStores<ApplicationDbContext>();
+        builder.Services.AddDefaultIdentity<IdentityUser>().AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
+
+        //builder.Services.AddSingleton<IAnalyticsService, AnalyticsService>();
+        //builder.Services.AddSingleton<IBasketService, BasketService>();
+        //builder.Services.AddSingleton<IOrderService, OrderService>();
+        //builder.Services.AddSingleton<IProductService, ProductService>();
+
+
 
         builder.Services.Config();
         builder.Services.AddRazorPages();
-
         builder.Services.AddControllersWithViews();
-
 
         var app = builder.Build();
 
@@ -69,12 +75,11 @@ public static class Program
         app.UseAuthorization();
         app.MapRazorPages();
 
-        using (var scope = app.Services.CreateScope())
-        {
-            var services = scope.ServiceProvider;
-            await RoleInitializer.SeedRoles(services);
-            await AdminInitializer.SeedAdmin(services);
-        }
+        using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var services = scope.ServiceProvider;
+        await RoleInitializer.SeedRoles(services);
+        await AdminInitializer.SeedAdmin(services);
+        await DbInitializer.GodSeedDatabase(services);
 
         app.Run();
     }

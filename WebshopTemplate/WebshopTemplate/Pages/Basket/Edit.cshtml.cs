@@ -1,21 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using WebshopTemplate.Data;
-using WebshopTemplate.Models;
-
-namespace WebshopTemplate.Pages.Basket
+﻿namespace WebshopTemplate.Pages.Basket
 {
     public class EditModel : PageModel
     {
-        private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public EditModel(WebshopTemplate.Data.ApplicationDbContext context)
+        public EditModel(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -30,7 +19,7 @@ namespace WebshopTemplate.Pages.Basket
                 return NotFound();
             }
 
-            var basket =  await _context.Basket.FirstOrDefaultAsync(m => m.Id == id);
+            var basket =  await _context.Baskets.FirstOrDefaultAsync(m => m.Id == id);
             if (basket == null)
             {
                 return NotFound();
@@ -71,7 +60,7 @@ namespace WebshopTemplate.Pages.Basket
 
         private bool BasketExists(string id)
         {
-            return _context.Basket.Any(e => e.Id == id);
+            return _context.Baskets.Any(e => e.Id == id);
         }
     }
 }

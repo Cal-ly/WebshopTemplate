@@ -1,20 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using WebshopTemplate.Data;
-using WebshopTemplate.Models;
-
-namespace WebshopTemplate.Pages.Basket
+﻿namespace WebshopTemplate.Pages.Basket
 {
     public class CreateModel : PageModel
     {
-        private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public CreateModel(WebshopTemplate.Data.ApplicationDbContext context)
+        public CreateModel(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -35,7 +25,7 @@ namespace WebshopTemplate.Pages.Basket
                 return Page();
             }
 
-            _context.Basket.Add(Basket);
+            _context.Baskets.Add(Basket);
             await _context.SaveChangesAsync();
 
             return RedirectToPage("./Index");
