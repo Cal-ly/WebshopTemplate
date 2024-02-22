@@ -7,7 +7,8 @@
         public string? Id { get; set; }
         public string? UserId { get; set; }
         [ForeignKey("UserId")]
-        public virtual IdentityUser? User { get; set; }
+        public IdentityUser? User { get; set; }
+
         [Display(Name = "First Name")]
         public string? FirstName { get; set; } = string.Empty;
         [Display(Name = "Last Name")]
@@ -23,8 +24,9 @@
         // Work-specific details
         [DataType(DataType.Date),Display(Name = "Employment Date"), DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true), DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime? EmploymentDate { get; set; }
-        public DateTime? TerminationDate { get; set; }
-        public decimal BasePay { get; set; } = 0;
+        //[DataType(DataType.Date), Display(Name = "Termination Date"), DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+        //public DateTime? TerminationDate { get; set; }
+        public decimal? BasePay { get; set; }
         public virtual string? Notes { get; set; } = string.Empty;
         public virtual string? ImageUrl { get; set; } = string.Empty;
 

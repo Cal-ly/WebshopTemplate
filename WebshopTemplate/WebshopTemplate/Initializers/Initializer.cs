@@ -36,9 +36,9 @@ namespace WebshopTemplate.Initializers
                 new IdentityUser { UserName = "john@mail.com", Email = "john@mail.com", EmailConfirmed = true },
                 new IdentityUser { UserName = "jane@mail.com", Email = "jane@mail.com", EmailConfirmed = true },
                 new IdentityUser { UserName = "daddy@mail.com", Email = "daddy@mail.com", EmailConfirmed = true },
-                new IdentityUser { UserName = "mommy@mail.com", Email = "mommy@mail.com" , EmailConfirmed = true},
-                new IdentityUser { UserName = "sonny@mail.com", Email = "sonny@mail.com" , EmailConfirmed = true},
-                new IdentityUser { UserName = "sunny@mail.com", Email = "sunny@mail.com" , EmailConfirmed = true}
+                new IdentityUser { UserName = "mommy@mail.com", Email = "mommy@mail.com", EmailConfirmed = true },
+                new IdentityUser { UserName = "sonny@mail.com", Email = "sonny@mail.com", EmailConfirmed = true },
+                new IdentityUser { UserName = "sunny@mail.com", Email = "sunny@mail.com", EmailConfirmed = true }
             };
 
             for (int i = 0; i < customerUsers.Count; i++)
@@ -48,31 +48,10 @@ namespace WebshopTemplate.Initializers
                 {
                     await userManager.AddToRoleAsync(customerUsers[i], i < 5 ? superMemberRole : memberRole);
                 }
-                customers.Add(new Customer { UserId = customerUsers[i].Id, User = customerUsers[i], FirstName = "FirstName" + i, LastName = "LastName" + i, Address = "Address " + i, City = "City " + i, PostalCode = "PostalCode" + i, Country = "Denmark", Phone = "Phone" + i, RepresentingCompany = i < 4 ? companies[0] : companies[1] });
+                customers.Add(new Customer { Id = Guid.NewGuid().ToString(), UserId = customerUsers[i].Id, User = customerUsers[i], FirstName = "FirstName" + i, LastName = "LastName" + i, Address = "Address " + i, City = "City " + i, PostalCode = "PostalCode" + i, Country = "Denmark", Phone = "Phone" + i, RepresentingCompany = i < 4 ? companies[0] : companies[1] });
             }
 
             await context.Customers.AddRangeAsync(customers);
-
-            // Define Staff
-            var staffMembers = new List<Staff>();
-            var staffUsers = new List<IdentityUser>
-            {
-                new IdentityUser { UserName = "staff1@staff.com", Email = "staff1@staff.com", EmailConfirmed = true },
-                new IdentityUser { UserName = "staff2@staff.com", Email = "staff2@staff.com" , EmailConfirmed = true},
-                new IdentityUser { UserName = "staff3@staff.com", Email = "staff3@staff.com" , EmailConfirmed = true}
-            };
-
-            for (int i = 0; i < staffUsers.Count; i++)
-            {
-                var result = await userManager.CreateAsync(staffUsers[i], password);
-                if (result.Succeeded)
-                {
-                    await userManager.AddToRoleAsync(staffUsers[i], managerRole);
-                }
-                staffMembers.Add(new Staff { UserId = staffUsers[i].Id, User = staffUsers[i], FirstName = "StaffFirstName" + i, LastName = "StaffLastName" + i, Address = "Address " + (i + 6), City = "City " + (i + 6), PostalCode = "PostalCode" + (i + 6), Country = "Denmark", Phone = "Phone" + (i + 6) });
-            }
-
-            await context.Staffers.AddRangeAsync(staffMembers);
 
             //Add companies and customers to the database
             await context.Companies.AddRangeAsync(companies);
@@ -82,6 +61,30 @@ namespace WebshopTemplate.Initializers
             companies[0].Representatives.Add(customers[1]);
             companies[1].Representatives.Add(customers[2]);
             companies[1].Representatives.Add(customers[3]);
+
+            // Define Staff
+            var staffMembers = new List<Staff>();
+            var staffUsers = new List<IdentityUser>
+            {
+                new IdentityUser { UserName = "staff1@staff.com", Email = "staff1@mail.com", EmailConfirmed = true },
+                new IdentityUser { UserName = "staff2@staff.com", Email = "staff2@mail.com", EmailConfirmed = true },
+                new IdentityUser { UserName = "staff3@staff.com", Email = "staff3@mail.com", EmailConfirmed = true }
+            };
+
+            for (int i = 0; i < staffUsers.Count; i++)
+            {
+                var result = await userManager.CreateAsync(staffUsers[i], password);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(staffUsers[i], managerRole);
+                }
+                int j = i + 6;
+                staffMembers.Add(new Staff { Id = Guid.NewGuid().ToString(), UserId = staffUsers[i].Id, User = staffUsers[i], FirstName = "StaffFirstName" + i, LastName = "StaffLastName" + i, Address = "Address " + j, City = "City " + j, PostalCode = "PostalCode" + j, Country = "Denmark", Phone = "Phone" + j });
+            }
+
+            await context.Staffers.AddRangeAsync(staffMembers);
+
+            await context.SaveChangesAsync();
         }
         public static async Task SeedDatabaseCategoryAndProducts(IServiceProvider serviceProvider)
         {
@@ -208,12 +211,6 @@ namespace WebshopTemplate.Initializers
 
             await context.Orders.AddRangeAsync(orders);
             await context.SaveChangesAsync();
-        }
-        public static async Task SeedDatabaseStaged(IServiceProvider serviceProvider)
-        {
-            await SeedDatabaseUser(serviceProvider);
-            await SeedDatabaseCategoryAndProducts(serviceProvider);
-            await SeedDatabaseOrders(serviceProvider);
         }
         public static async Task GodSeedDatabase(IServiceProvider serviceProvider)
         {

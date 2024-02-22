@@ -83,7 +83,7 @@ public static class Program
         await context.Database.EnsureCreatedAsync();
         await RoleInitializer.SeedRoles(services);
         await AdminInitializer.SeedAdmin(services);
-        await Initializer.GodSeedDatabase(services);
+        await Initializer.SeedDatabaseUser(services);
 
         app.Run();
     }

@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace WebshopTemplate.Models
+﻿namespace WebshopTemplate.Models
 {
     public class Customer
     {
@@ -11,12 +8,14 @@ namespace WebshopTemplate.Models
         public string? UserId { get; set; }
         [ForeignKey("UserId")]
         public IdentityUser? User { get; set; }
+
         [Display(Name = "First Name")]
         public string? FirstName { get; set; } = string.Empty;
         [Display(Name = "Last Name")]
         public string? LastName { get; set; } = string.Empty;
         public string? Address { get; set; } = string.Empty;
         public string? City { get; set; } = string.Empty;
+        [Display(Name = "Postal Code")]
         public string? PostalCode { get; set; } = string.Empty;
         public string? Country { get; set; } = "Denmark";
         public string? Phone { get; set; } = string.Empty;
