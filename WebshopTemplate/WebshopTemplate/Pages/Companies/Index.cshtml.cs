@@ -8,22 +8,21 @@ using Microsoft.EntityFrameworkCore;
 using WebshopTemplate.Data;
 using WebshopTemplate.Models;
 
-namespace WebshopTemplate.Pages.Companies
+namespace WebshopTemplate.Pages.Companies;
+
+public class IndexModel : PageModel
 {
-    public class IndexModel : PageModel
+    private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+
+    public IndexModel(WebshopTemplate.Data.ApplicationDbContext context)
     {
-        private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public IndexModel(WebshopTemplate.Data.ApplicationDbContext context)
-        {
-            _context = context;
-        }
+    public IList<Company> Company { get;set; } = default!;
 
-        public IList<Company> Company { get;set; } = default!;
-
-        public async Task OnGetAsync()
-        {
-            Company = await _context.Companies.ToListAsync();
-        }
+    public async Task OnGetAsync()
+    {
+        Company = await _context.Companies.ToListAsync();
     }
 }

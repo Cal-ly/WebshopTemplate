@@ -8,37 +8,36 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using WebshopTemplate.Data;
 using WebshopTemplate.Models;
 
-namespace WebshopTemplate.Pages.Categories
+namespace WebshopTemplate.Pages.Categories;
+
+public class CreateModel : PageModel
 {
-    public class CreateModel : PageModel
+    private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+
+    public CreateModel(WebshopTemplate.Data.ApplicationDbContext context)
     {
-        private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public CreateModel(WebshopTemplate.Data.ApplicationDbContext context)
-        {
-            _context = context;
-        }
+    public IActionResult OnGet()
+    {
+        return Page();
+    }
 
-        public IActionResult OnGet()
+    [BindProperty]
+    public Category Category { get; set; } = default!;
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task<IActionResult> OnPostAsync()
+    {
+        if (!ModelState.IsValid)
         {
             return Page();
         }
 
-        [BindProperty]
-        public Category Category { get; set; } = default!;
+        _context.Categories.Add(Category);
+        await _context.SaveChangesAsync();
 
-        // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
-        public async Task<IActionResult> OnPostAsync()
-        {
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
-
-            _context.Categories.Add(Category);
-            await _context.SaveChangesAsync();
-
-            return RedirectToPage("./Index");
-        }
+        return RedirectToPage("./Index");
     }
 }

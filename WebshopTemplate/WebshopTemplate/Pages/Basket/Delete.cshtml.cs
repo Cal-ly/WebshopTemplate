@@ -1,53 +1,52 @@
-﻿namespace WebshopTemplate.Pages.Basket
+﻿namespace WebshopTemplate.Pages.Basket;
+
+public class DeleteModel : PageModel
 {
-    public class DeleteModel : PageModel
+    private readonly ApplicationDbContext _context;
+
+    public DeleteModel(ApplicationDbContext context)
     {
-        private readonly ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public DeleteModel(ApplicationDbContext context)
+    [BindProperty]
+    public Models.Basket Basket { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(string id)
+    {
+        if (id == null)
         {
-            _context = context;
+            return NotFound();
         }
 
-        [BindProperty]
-        public Models.Basket Basket { get; set; } = default!;
+        var basket = await _context.Baskets.FirstOrDefaultAsync(m => m.Id == id);
 
-        public async Task<IActionResult> OnGetAsync(string id)
+        if (basket == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            return NotFound();
+        }
+        else
+        {
+            Basket = basket;
+        }
+        return Page();
+    }
 
-            var basket = await _context.Baskets.FirstOrDefaultAsync(m => m.Id == id);
-
-            if (basket == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                Basket = basket;
-            }
-            return Page();
+    public async Task<IActionResult> OnPostAsync(string id)
+    {
+        if (id == null)
+        {
+            return NotFound();
         }
 
-        public async Task<IActionResult> OnPostAsync(string id)
+        var basket = await _context.Baskets.FindAsync(id);
+        if (basket != null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var basket = await _context.Baskets.FindAsync(id);
-            if (basket != null)
-            {
-                Basket = basket;
-                _context.Baskets.Remove(Basket);
-                await _context.SaveChangesAsync();
-            }
-
-            return RedirectToPage("./Index");
+            Basket = basket;
+            _context.Baskets.Remove(Basket);
+            await _context.SaveChangesAsync();
         }
+
+        return RedirectToPage("./Index");
     }
 }

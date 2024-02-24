@@ -9,70 +9,69 @@ using Microsoft.EntityFrameworkCore;
 using WebshopTemplate.Data;
 using WebshopTemplate.Models;
 
-namespace WebshopTemplate.Pages.Products
-{
-    public class EditModel : PageModel
-    {
-        private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+namespace WebshopTemplate.Pages.Products;
 
-        public EditModel(WebshopTemplate.Data.ApplicationDbContext context)
+public class EditModel : PageModel
+{
+    private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+
+    public EditModel(WebshopTemplate.Data.ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    [BindProperty]
+    public Product Product { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(string id)
+    {
+        if (id == null)
         {
-            _context = context;
+            return NotFound();
         }
 
-        [BindProperty]
-        public Product Product { get; set; } = default!;
-
-        public async Task<IActionResult> OnGetAsync(string id)
+        var product =  await _context.Products.FirstOrDefaultAsync(m => m.Id == id);
+        if (product == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            return NotFound();
+        }
+        Product = product;
+       ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id");
+        return Page();
+    }
 
-            var product =  await _context.Products.FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-            Product = product;
-           ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id");
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task<IActionResult> OnPostAsync()
+    {
+        if (!ModelState.IsValid)
+        {
             return Page();
         }
 
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync()
+        _context.Attach(Product).State = EntityState.Modified;
+
+        try
         {
-            if (!ModelState.IsValid)
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!ProductExists(Product.Id))
             {
-                return Page();
+                return NotFound();
             }
-
-            _context.Attach(Product).State = EntityState.Modified;
-
-            try
+            else
             {
-                await _context.SaveChangesAsync();
+                throw;
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ProductExists(Product.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return RedirectToPage("./Index");
         }
 
-        private bool ProductExists(string id)
-        {
-            return _context.Products.Any(e => e.Id == id);
-        }
+        return RedirectToPage("./Index");
+    }
+
+    private bool ProductExists(string id)
+    {
+        return _context.Products.Any(e => e.Id == id);
     }
 }

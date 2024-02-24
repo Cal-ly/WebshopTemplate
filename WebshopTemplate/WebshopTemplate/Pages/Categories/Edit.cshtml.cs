@@ -9,69 +9,68 @@ using Microsoft.EntityFrameworkCore;
 using WebshopTemplate.Data;
 using WebshopTemplate.Models;
 
-namespace WebshopTemplate.Pages.Categories
-{
-    public class EditModel : PageModel
-    {
-        private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+namespace WebshopTemplate.Pages.Categories;
 
-        public EditModel(WebshopTemplate.Data.ApplicationDbContext context)
+public class EditModel : PageModel
+{
+    private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+
+    public EditModel(WebshopTemplate.Data.ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    [BindProperty]
+    public Category Category { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(string id)
+    {
+        if (id == null)
         {
-            _context = context;
+            return NotFound();
         }
 
-        [BindProperty]
-        public Category Category { get; set; } = default!;
-
-        public async Task<IActionResult> OnGetAsync(string id)
+        var category =  await _context.Categories.FirstOrDefaultAsync(m => m.Id == id);
+        if (category == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            return NotFound();
+        }
+        Category = category;
+        return Page();
+    }
 
-            var category =  await _context.Categories.FirstOrDefaultAsync(m => m.Id == id);
-            if (category == null)
-            {
-                return NotFound();
-            }
-            Category = category;
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task<IActionResult> OnPostAsync()
+    {
+        if (!ModelState.IsValid)
+        {
             return Page();
         }
 
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync()
+        _context.Attach(Category).State = EntityState.Modified;
+
+        try
         {
-            if (!ModelState.IsValid)
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!CategoryExists(Category.Id))
             {
-                return Page();
+                return NotFound();
             }
-
-            _context.Attach(Category).State = EntityState.Modified;
-
-            try
+            else
             {
-                await _context.SaveChangesAsync();
+                throw;
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CategoryExists(Category.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return RedirectToPage("./Index");
         }
 
-        private bool CategoryExists(string id)
-        {
-            return _context.Categories.Any(e => e.Id == id);
-        }
+        return RedirectToPage("./Index");
+    }
+
+    private bool CategoryExists(string id)
+    {
+        return _context.Categories.Any(e => e.Id == id);
     }
 }

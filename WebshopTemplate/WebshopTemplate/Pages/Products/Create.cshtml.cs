@@ -8,38 +8,37 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using WebshopTemplate.Data;
 using WebshopTemplate.Models;
 
-namespace WebshopTemplate.Pages.Products
+namespace WebshopTemplate.Pages.Products;
+
+public class CreateModel : PageModel
 {
-    public class CreateModel : PageModel
+    private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+
+    public CreateModel(WebshopTemplate.Data.ApplicationDbContext context)
     {
-        private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public CreateModel(WebshopTemplate.Data.ApplicationDbContext context)
-        {
-            _context = context;
-        }
+    public IActionResult OnGet()
+    {
+    ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id");
+        return Page();
+    }
 
-        public IActionResult OnGet()
+    [BindProperty]
+    public Product Product { get; set; } = default!;
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task<IActionResult> OnPostAsync()
+    {
+        if (!ModelState.IsValid)
         {
-        ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id");
             return Page();
         }
 
-        [BindProperty]
-        public Product Product { get; set; } = default!;
+        _context.Products.Add(Product);
+        await _context.SaveChangesAsync();
 
-        // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
-        public async Task<IActionResult> OnPostAsync()
-        {
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
-
-            _context.Products.Add(Product);
-            await _context.SaveChangesAsync();
-
-            return RedirectToPage("./Index");
-        }
+        return RedirectToPage("./Index");
     }
 }

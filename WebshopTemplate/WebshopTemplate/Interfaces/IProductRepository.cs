@@ -1,7 +1,6 @@
-﻿namespace WebshopTemplate.Interfaces
+﻿namespace WebshopTemplate.Interfaces;
+
+public interface IProductRepository : IRepository<Product>
 {
-    public interface IProductRepository : IRepository<Product>
-    {
-        Task<List<Product>?> GetByCategoryIdAsync(string categoryId);
-    }
+    Task<List<Product>?> GetByCategoryIdAsync(string categoryId);
 }

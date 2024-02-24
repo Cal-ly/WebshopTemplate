@@ -1,33 +1,32 @@
-﻿namespace WebshopTemplate.Pages.Basket
+﻿namespace WebshopTemplate.Pages.Basket;
+
+public class DetailsModel : PageModel
 {
-    public class DetailsModel : PageModel
+    private readonly ApplicationDbContext _context;
+
+    public DetailsModel(ApplicationDbContext context)
     {
-        private readonly ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public DetailsModel(ApplicationDbContext context)
+    public Models.Basket Basket { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(string id)
+    {
+        if (id == null)
         {
-            _context = context;
+            return NotFound();
         }
 
-        public Models.Basket Basket { get; set; } = default!;
-
-        public async Task<IActionResult> OnGetAsync(string id)
+        var basket = await _context.Baskets.FirstOrDefaultAsync(m => m.Id == id);
+        if (basket == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var basket = await _context.Baskets.FirstOrDefaultAsync(m => m.Id == id);
-            if (basket == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                Basket = basket;
-            }
-            return Page();
+            return NotFound();
         }
+        else
+        {
+            Basket = basket;
+        }
+        return Page();
     }
 }

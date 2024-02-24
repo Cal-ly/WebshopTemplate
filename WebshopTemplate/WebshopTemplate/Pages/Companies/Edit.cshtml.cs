@@ -9,69 +9,68 @@ using Microsoft.EntityFrameworkCore;
 using WebshopTemplate.Data;
 using WebshopTemplate.Models;
 
-namespace WebshopTemplate.Pages.Companies
-{
-    public class EditModel : PageModel
-    {
-        private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+namespace WebshopTemplate.Pages.Companies;
 
-        public EditModel(WebshopTemplate.Data.ApplicationDbContext context)
+public class EditModel : PageModel
+{
+    private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+
+    public EditModel(WebshopTemplate.Data.ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    [BindProperty]
+    public Company Company { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(string id)
+    {
+        if (id == null)
         {
-            _context = context;
+            return NotFound();
         }
 
-        [BindProperty]
-        public Company Company { get; set; } = default!;
-
-        public async Task<IActionResult> OnGetAsync(string id)
+        var company =  await _context.Companies.FirstOrDefaultAsync(m => m.Id == id);
+        if (company == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            return NotFound();
+        }
+        Company = company;
+        return Page();
+    }
 
-            var company =  await _context.Companies.FirstOrDefaultAsync(m => m.Id == id);
-            if (company == null)
-            {
-                return NotFound();
-            }
-            Company = company;
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task<IActionResult> OnPostAsync()
+    {
+        if (!ModelState.IsValid)
+        {
             return Page();
         }
 
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync()
+        _context.Attach(Company).State = EntityState.Modified;
+
+        try
         {
-            if (!ModelState.IsValid)
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!CompanyExists(Company.Id))
             {
-                return Page();
+                return NotFound();
             }
-
-            _context.Attach(Company).State = EntityState.Modified;
-
-            try
+            else
             {
-                await _context.SaveChangesAsync();
+                throw;
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CompanyExists(Company.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return RedirectToPage("./Index");
         }
 
-        private bool CompanyExists(string id)
-        {
-            return _context.Companies.Any(e => e.Id == id);
-        }
+        return RedirectToPage("./Index");
+    }
+
+    private bool CompanyExists(string id)
+    {
+        return _context.Companies.Any(e => e.Id == id);
     }
 }

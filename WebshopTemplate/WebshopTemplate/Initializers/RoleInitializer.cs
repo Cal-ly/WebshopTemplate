@@ -1,19 +1,18 @@
-﻿namespace WebshopTemplate.Initializers
-{
-    public static class RoleInitializer
-    {
-        public static async Task SeedRoles(IServiceProvider serviceProvider)
-        {
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+﻿namespace WebshopTemplate.Initializers;
 
-            string[] roleNames = { "Admin", "Manager", "SuperMember", "Member" };
-            foreach (var roleName in roleNames)
+public static class RoleInitializer
+{
+    public static async Task SeedRoles(IServiceProvider serviceProvider)
+    {
+        var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+        string[] roleNames = { "Admin", "Manager", "SuperMember", "Member" };
+        foreach (var roleName in roleNames)
+        {
+            var roleExist = await roleManager.RoleExistsAsync(roleName);
+            if (!roleExist)
             {
-                var roleExist = await roleManager.RoleExistsAsync(roleName);
-                if (!roleExist)
-                {
-                    await roleManager.CreateAsync(new IdentityRole(roleName));
-                }
+                await roleManager.CreateAsync(new IdentityRole(roleName));
             }
         }
     }

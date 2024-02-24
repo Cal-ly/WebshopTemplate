@@ -1,66 +1,65 @@
-﻿namespace WebshopTemplate.Pages.Basket
-{
-    public class EditModel : PageModel
-    {
-        private readonly ApplicationDbContext _context;
+﻿namespace WebshopTemplate.Pages.Basket;
 
-        public EditModel(ApplicationDbContext context)
+public class EditModel : PageModel
+{
+    private readonly ApplicationDbContext _context;
+
+    public EditModel(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    [BindProperty]
+    public Models.Basket Basket { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(string id)
+    {
+        if (id == null)
         {
-            _context = context;
+            return NotFound();
         }
 
-        [BindProperty]
-        public Models.Basket Basket { get; set; } = default!;
-
-        public async Task<IActionResult> OnGetAsync(string id)
+        var basket =  await _context.Baskets.FirstOrDefaultAsync(m => m.Id == id);
+        if (basket == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            return NotFound();
+        }
+        Basket = basket;
+        return Page();
+    }
 
-            var basket =  await _context.Baskets.FirstOrDefaultAsync(m => m.Id == id);
-            if (basket == null)
-            {
-                return NotFound();
-            }
-            Basket = basket;
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task<IActionResult> OnPostAsync()
+    {
+        if (!ModelState.IsValid)
+        {
             return Page();
         }
 
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync()
+        _context.Attach(Basket).State = EntityState.Modified;
+
+        try
         {
-            if (!ModelState.IsValid)
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!BasketExists(Basket.Id))
             {
-                return Page();
+                return NotFound();
             }
-
-            _context.Attach(Basket).State = EntityState.Modified;
-
-            try
+            else
             {
-                await _context.SaveChangesAsync();
+                throw;
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!BasketExists(Basket.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return RedirectToPage("./Index");
         }
 
-        private bool BasketExists(string id)
-        {
-            return _context.Baskets.Any(e => e.Id == id);
-        }
+        return RedirectToPage("./Index");
+    }
+
+    private bool BasketExists(string id)
+    {
+        return _context.Baskets.Any(e => e.Id == id);
     }
 }

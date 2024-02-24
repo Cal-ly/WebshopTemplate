@@ -8,56 +8,55 @@ using Microsoft.EntityFrameworkCore;
 using WebshopTemplate.Data;
 using WebshopTemplate.Models;
 
-namespace WebshopTemplate.Pages.Categories
+namespace WebshopTemplate.Pages.Categories;
+
+public class DeleteModel : PageModel
 {
-    public class DeleteModel : PageModel
+    private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+
+    public DeleteModel(WebshopTemplate.Data.ApplicationDbContext context)
     {
-        private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public DeleteModel(WebshopTemplate.Data.ApplicationDbContext context)
+    [BindProperty]
+    public Category Category { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(string id)
+    {
+        if (id == null)
         {
-            _context = context;
+            return NotFound();
         }
 
-        [BindProperty]
-        public Category Category { get; set; } = default!;
+        var category = await _context.Categories.FirstOrDefaultAsync(m => m.Id == id);
 
-        public async Task<IActionResult> OnGetAsync(string id)
+        if (category == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            return NotFound();
+        }
+        else
+        {
+            Category = category;
+        }
+        return Page();
+    }
 
-            var category = await _context.Categories.FirstOrDefaultAsync(m => m.Id == id);
-
-            if (category == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                Category = category;
-            }
-            return Page();
+    public async Task<IActionResult> OnPostAsync(string id)
+    {
+        if (id == null)
+        {
+            return NotFound();
         }
 
-        public async Task<IActionResult> OnPostAsync(string id)
+        var category = await _context.Categories.FindAsync(id);
+        if (category != null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var category = await _context.Categories.FindAsync(id);
-            if (category != null)
-            {
-                Category = category;
-                _context.Categories.Remove(Category);
-                await _context.SaveChangesAsync();
-            }
-
-            return RedirectToPage("./Index");
+            Category = category;
+            _context.Categories.Remove(Category);
+            await _context.SaveChangesAsync();
         }
+
+        return RedirectToPage("./Index");
     }
 }

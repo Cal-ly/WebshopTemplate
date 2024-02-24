@@ -8,36 +8,35 @@ using Microsoft.EntityFrameworkCore;
 using WebshopTemplate.Data;
 using WebshopTemplate.Models;
 
-namespace WebshopTemplate.Pages.Products
+namespace WebshopTemplate.Pages.Products;
+
+public class DetailsModel : PageModel
 {
-    public class DetailsModel : PageModel
+    private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+
+    public DetailsModel(WebshopTemplate.Data.ApplicationDbContext context)
     {
-        private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public DetailsModel(WebshopTemplate.Data.ApplicationDbContext context)
+    public Product Product { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(string id)
+    {
+        if (id == null)
         {
-            _context = context;
+            return NotFound();
         }
 
-        public Product Product { get; set; } = default!;
-
-        public async Task<IActionResult> OnGetAsync(string id)
+        var product = await _context.Products.FirstOrDefaultAsync(m => m.Id == id);
+        if (product == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var product = await _context.Products.FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                Product = product;
-            }
-            return Page();
+            return NotFound();
         }
+        else
+        {
+            Product = product;
+        }
+        return Page();
     }
 }

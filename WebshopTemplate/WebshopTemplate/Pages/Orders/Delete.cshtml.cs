@@ -8,56 +8,55 @@ using Microsoft.EntityFrameworkCore;
 using WebshopTemplate.Data;
 using WebshopTemplate.Models;
 
-namespace WebshopTemplate.Pages.Orders
+namespace WebshopTemplate.Pages.Orders;
+
+public class DeleteModel : PageModel
 {
-    public class DeleteModel : PageModel
+    private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+
+    public DeleteModel(WebshopTemplate.Data.ApplicationDbContext context)
     {
-        private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public DeleteModel(WebshopTemplate.Data.ApplicationDbContext context)
+    [BindProperty]
+    public Order Order { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(string id)
+    {
+        if (id == null)
         {
-            _context = context;
+            return NotFound();
         }
 
-        [BindProperty]
-        public Order Order { get; set; } = default!;
+        var order = await _context.Orders.FirstOrDefaultAsync(m => m.Id == id);
 
-        public async Task<IActionResult> OnGetAsync(string id)
+        if (order == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            return NotFound();
+        }
+        else
+        {
+            Order = order;
+        }
+        return Page();
+    }
 
-            var order = await _context.Orders.FirstOrDefaultAsync(m => m.Id == id);
-
-            if (order == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                Order = order;
-            }
-            return Page();
+    public async Task<IActionResult> OnPostAsync(string id)
+    {
+        if (id == null)
+        {
+            return NotFound();
         }
 
-        public async Task<IActionResult> OnPostAsync(string id)
+        var order = await _context.Orders.FindAsync(id);
+        if (order != null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var order = await _context.Orders.FindAsync(id);
-            if (order != null)
-            {
-                Order = order;
-                _context.Orders.Remove(Order);
-                await _context.SaveChangesAsync();
-            }
-
-            return RedirectToPage("./Index");
+            Order = order;
+            _context.Orders.Remove(Order);
+            await _context.SaveChangesAsync();
         }
+
+        return RedirectToPage("./Index");
     }
 }

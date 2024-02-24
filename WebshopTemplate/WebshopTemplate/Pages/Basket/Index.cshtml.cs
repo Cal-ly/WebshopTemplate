@@ -8,22 +8,21 @@ using Microsoft.EntityFrameworkCore;
 using WebshopTemplate.Data;
 using WebshopTemplate.Models;
 
-namespace WebshopTemplate.Pages.Basket
+namespace WebshopTemplate.Pages.Basket;
+
+public class IndexModel : PageModel
 {
-    public class IndexModel : PageModel
+    private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+
+    public IndexModel(WebshopTemplate.Data.ApplicationDbContext context)
     {
-        private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public IndexModel(WebshopTemplate.Data.ApplicationDbContext context)
-        {
-            _context = context;
-        }
+    public IList<Models.Basket> Basket { get;set; } = default!;
 
-        public IList<Models.Basket> Basket { get;set; } = default!;
-
-        public async Task OnGetAsync()
-        {
-            Basket = await _context.Baskets.ToListAsync();
-        }
+    public async Task OnGetAsync()
+    {
+        Basket = await _context.Baskets.ToListAsync();
     }
 }

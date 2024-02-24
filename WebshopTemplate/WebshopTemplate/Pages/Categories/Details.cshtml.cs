@@ -8,36 +8,35 @@ using Microsoft.EntityFrameworkCore;
 using WebshopTemplate.Data;
 using WebshopTemplate.Models;
 
-namespace WebshopTemplate.Pages.Categories
+namespace WebshopTemplate.Pages.Categories;
+
+public class DetailsModel : PageModel
 {
-    public class DetailsModel : PageModel
+    private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+
+    public DetailsModel(WebshopTemplate.Data.ApplicationDbContext context)
     {
-        private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+        _context = context;
+    }
 
-        public DetailsModel(WebshopTemplate.Data.ApplicationDbContext context)
+    public Category Category { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(string id)
+    {
+        if (id == null)
         {
-            _context = context;
+            return NotFound();
         }
 
-        public Category Category { get; set; } = default!;
-
-        public async Task<IActionResult> OnGetAsync(string id)
+        var category = await _context.Categories.FirstOrDefaultAsync(m => m.Id == id);
+        if (category == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var category = await _context.Categories.FirstOrDefaultAsync(m => m.Id == id);
-            if (category == null)
-            {
-                return NotFound();
-            }
-            else
-            {
-                Category = category;
-            }
-            return Page();
+            return NotFound();
         }
+        else
+        {
+            Category = category;
+        }
+        return Page();
     }
 }

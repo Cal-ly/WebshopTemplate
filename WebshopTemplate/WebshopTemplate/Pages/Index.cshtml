@@ -3,28 +3,28 @@
 @{
 
     if (User.IsInRole("Admin"))
-    {
-        ViewData["Title"] = "Admin page";
-        <h1>Welcome Admin</h1>
-    }
-    else if (User.IsInRole("Manager"))
-    {
-        ViewData["Title"] = "Manager page";
-        <h1>Welcome Manager</h1>
-    }
-    else if (User.IsInRole("SuperMember"))
-    {
-        ViewData["Title"] = "SuperMember page";
-        <h1>Welcome SuperMember</h1>
-    }
-    else if (User.IsInRole("Member"))
-    {
-        ViewData["Title"] = "Member page";
-        <h1>Welcome Member</h1>
-    }
-    else
-    {
-        ViewData["Title"] = "Home page";
-        <h1>Welcome</h1>
-    }
+{
+    ViewData["Title"] = "Admin page";
+    <h1>Welcome Admin</h1>
+}
+else if (User.IsInRole("Manager"))
+{
+    ViewData["Title"] = "Manager page";
+    <h1>Welcome Manager</h1>
+}
+else if (User.IsInRole("SuperMember"))
+{
+    ViewData["Title"] = "SuperMember page";
+    <h1>Welcome SuperMember</h1>
+}
+else if (User.IsInRole("Member"))
+{
+    ViewData["Title"] = "Member page";
+    <h1>Welcome Member</h1>
+}
+else
+{
+    ViewData["Title"] = "Home page";
+    <h1>Welcome</h1>
+}
 }

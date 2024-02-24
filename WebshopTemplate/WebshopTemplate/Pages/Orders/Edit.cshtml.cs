@@ -9,71 +9,70 @@ using Microsoft.EntityFrameworkCore;
 using WebshopTemplate.Data;
 using WebshopTemplate.Models;
 
-namespace WebshopTemplate.Pages.Orders
-{
-    public class EditModel : PageModel
-    {
-        private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+namespace WebshopTemplate.Pages.Orders;
 
-        public EditModel(WebshopTemplate.Data.ApplicationDbContext context)
+public class EditModel : PageModel
+{
+    private readonly WebshopTemplate.Data.ApplicationDbContext _context;
+
+    public EditModel(WebshopTemplate.Data.ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    [BindProperty]
+    public Order Order { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(string id)
+    {
+        if (id == null)
         {
-            _context = context;
+            return NotFound();
         }
 
-        [BindProperty]
-        public Order Order { get; set; } = default!;
-
-        public async Task<IActionResult> OnGetAsync(string id)
+        var order =  await _context.Orders.FirstOrDefaultAsync(m => m.Id == id);
+        if (order == null)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            return NotFound();
+        }
+        Order = order;
+       ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "Id");
+       ViewData["StaffId"] = new SelectList(_context.Staffers, "Id", "Id");
+        return Page();
+    }
 
-            var order =  await _context.Orders.FirstOrDefaultAsync(m => m.Id == id);
-            if (order == null)
-            {
-                return NotFound();
-            }
-            Order = order;
-           ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "Id");
-           ViewData["StaffId"] = new SelectList(_context.Staffers, "Id", "Id");
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task<IActionResult> OnPostAsync()
+    {
+        if (!ModelState.IsValid)
+        {
             return Page();
         }
 
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync()
+        _context.Attach(Order).State = EntityState.Modified;
+
+        try
         {
-            if (!ModelState.IsValid)
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!OrderExists(Order.Id))
             {
-                return Page();
+                return NotFound();
             }
-
-            _context.Attach(Order).State = EntityState.Modified;
-
-            try
+            else
             {
-                await _context.SaveChangesAsync();
+                throw;
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!OrderExists(Order.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return RedirectToPage("./Index");
         }
 
-        private bool OrderExists(string id)
-        {
-            return _context.Orders.Any(e => e.Id == id);
-        }
+        return RedirectToPage("./Index");
+    }
+
+    private bool OrderExists(string id)
+    {
+        return _context.Orders.Any(e => e.Id == id);
     }
 }

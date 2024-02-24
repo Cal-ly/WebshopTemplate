@@ -31,6 +31,7 @@ global using WebshopTemplate.Initializers;
 global using WebshopTemplate.Services;
 global using WebshopTemplate.Repositories;
 global using WebshopTemplate.Pages;
+global using WebshopTemplate.Interfaces.Generics;
 
 namespace WebshopTemplate;
 public static class Program
