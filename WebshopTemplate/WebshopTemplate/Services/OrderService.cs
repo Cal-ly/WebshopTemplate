@@ -1,22 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using WebshopTemplate.Models;
-using WebshopTemplate.Repositories;
-
-namespace WebshopTemplate.Services
+﻿namespace WebshopTemplate.Services
 {
     public class OrderService : IOrderService
     {
-        private readonly IOrderRepository _orderRepository;
-        private readonly ApplicationDbContext _context;
+        private readonly IOrderRepository orderRepository;
 
-        public OrderService(IOrderRepository orderRepository, ApplicationDbContext context)
+        public OrderService(IOrderRepository orderRepository)
         {
-            _orderRepository = orderRepository;
-            _context = context;
+            this.orderRepository = orderRepository;
         }
-
-        public async Task<Order> CreateOrderFromBasketAsync(string userId, Basket basket)
+        public async Task<Order?> CreateOrderFromBasketAsync(string userId, Basket basket)
         {
             var order = new Order // Implement: When a user submits an order and aren't logged in, the order should be created with a temporary user id, i.e. a placeholder Customer containing the Customer properties.
             {
@@ -35,49 +27,41 @@ namespace WebshopTemplate.Services
                     Price = item.ProductInBasket.Price,
                 });
             }
-
-            // Calculate the total price of the order if needed or perform additional processing
-            _context.Orders.Add(order);
-            await _context.SaveChangesAsync();
+            await (order != null ? orderRepository.Add(order) : throw new ArgumentNullException("Order is Null"));
 
             return order;
         }
-
-        public async Task<Order> UpdateOrderStatusAsync(string orderId, OrderStatus newStatus)
+        public async Task<List<Order>?> GetAllOrdersAsync()
         {
-            var order = await _orderRepository.Get(orderId);
+            return await orderRepository.GetAllAsync();
+        }
+        public async Task<Order?> UpdateOrderStatusAsync(string orderId, OrderStatus newStatus)
+        {
+            var order = await orderRepository.Get(orderId);
             if (order != null)
             {
                 order.Status = newStatus;
-                await _orderRepository.UpdateOrderAsync(order);
+                await orderRepository.UpdateAsync(order);
                 return order;
             }
             throw new KeyNotFoundException("Order not found.");
         }
-
-        public async Task<Order?> GetOrderByIdAsync(string orderId)
-        {
-            return await _orderRepository.Get(orderId);
-        }
-
-        public async Task<List<Order>> GetOrdersByCustomerIdAsync(string customerId)
-        {
-            return await _orderRepository.GetOrdersByCustomerIdAsync(customerId);
-        }
-
-        public async Task<List<Order>> GetAllOrdersAsync()
-        {
-            return await _orderRepository.GetAllAsync();
-        }
-
         public async Task<Order?> DeleteOrderAsync(string orderId)
         {
-            var orderDelete = await _orderRepository.Get(orderId);
+            var orderDelete = await orderRepository.Get(orderId);
             if (orderDelete != null)
             {
-                return await _orderRepository.DeleteOrderAsync(orderId);
+                return await orderRepository.DeleteAsync(orderId);
             }
             return orderDelete;
+        }
+        public async Task<Order?> GetOrderByIdAsync(string orderId)
+        {
+            return await orderRepository.Get(orderId);
+        }
+        public async Task<List<Order>?> GetOrdersByCustomerIdAsync(string customerId)
+        {
+            return await orderRepository.GetOrdersByCustomerIdAsync(customerId);
         }
     }
 }

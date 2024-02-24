@@ -1,19 +1,18 @@
-﻿using WebshopTemplate.Models.DTO;
-
-namespace WebshopTemplate.Services
+﻿namespace WebshopTemplate.Services
 {
     public class AnalyticsService : IAnalyticsService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext context;
         public AnalyticsService(ApplicationDbContext context)
         {
-            _context = context;
+            this.context = context;
         }
         public async Task<decimal> GetTotalSalesAsync(DateTime date)
         {
+
             decimal totalSales = 0;
             totalSales +=
-                await _context.Orders
+                await context.Orders
                     .Where(o => o.OrderDate == date.Date)
                         .SumAsync(o => o.OrderDetails!.Sum(od => od.Quantity * od.ProductInOrder!.Price));
             return totalSales;
@@ -21,9 +20,10 @@ namespace WebshopTemplate.Services
 
         public async Task<decimal> GetTotalSalesFromToAsync(DateTime dateStart, DateTime dateEnd)
         {
+
             decimal totalSales = 0;
             totalSales +=
-                await _context.Orders
+                await context.Orders
                     .Where(o => o.OrderDate >= dateStart.Date && o.OrderDate <= dateEnd.Date)
                         .SumAsync(o => o.OrderDetails!.Sum(od => od.Quantity * od.ProductInOrder!.Price));
             return totalSales;
@@ -31,7 +31,7 @@ namespace WebshopTemplate.Services
 
         public async Task<List<ProductSalesDTO>> GetTopSellingProductsAsync(DateTime startDate, DateTime endDate)
         {
-            return await _context.OrderDetails
+            return await context.OrderDetails
                 .Where(od => od.Order!.OrderDate >= startDate && od.Order.OrderDate <= endDate && od.Order != null)
                 .GroupBy(od => od.ProductId)
                 .Select(group => new ProductSalesDTO

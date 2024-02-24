@@ -25,47 +25,6 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
         base.OnModelCreating(modelBuilder);
 
-        #region Object Initialization
-
-        var categories = new List<Category>
-        {
-                new Category { Id = Guid.NewGuid().ToString(), Name = "Fresh Flowers", Description = "Beautiful blooms for every occasion." },
-                new Category { Id = Guid.NewGuid().ToString(), Name = "Flower Arrangements", Description = "Expertly crafted bouquets to brighten your space." },
-                new Category { Id = Guid.NewGuid().ToString(), Name = "Wedding Flowers", Description = "Elegant flowers for your special day." },
-                new Category { Id = Guid.NewGuid().ToString(), Name = "Indoor Plants", Description = "Greenery to enhance your indoor living areas." },
-                new Category { Id = Guid.NewGuid().ToString(), Name = "Flower Decorations", Description = "Decorative elements for home and events." }
-        };
-
-        var products = new List<Product>
-        {
-            // Fresh Flowers
-            new Product { Id = Guid.NewGuid().ToString(), Name = "Roses", Image = "roses.jpg", Description = "Red roses symbolizing love and respect.", Price = 29.99m, Quantity = 50, CategoryId = categories[0].Id },
-            new Product { Id = Guid.NewGuid().ToString(), Name = "Tulips", Image = "tulips.jpg", Description = "Colorful tulips for a vibrant touch.", Price = 19.99m, Quantity = 30, CategoryId = categories[0].Id },
-            new Product { Id = Guid.NewGuid().ToString(), Name = "Sunflowers", Image = "sunflowers.jpg", Description = "Bright and cheerful sunflowers.", Price = 24.99m, Quantity = 40, CategoryId = categories[0].Id },
-
-            // Flower Arrangements
-            new Product { Id = Guid.NewGuid().ToString(), Name = "Spring Bouquet", Image = "spring_bouquet.jpg", Description = "A fresh and lively arrangement of spring flowers.", Price = 49.99m, Quantity = 20, CategoryId = categories[1].Id },
-            new Product { Id = Guid.NewGuid().ToString(), Name = "Elegant Orchids", Image = "elegant_orchids.jpg", Description = "Sophisticated orchids for a modern look.", Price = 59.99m, Quantity = 15, CategoryId = categories[1].Id },
-            new Product { Id = Guid.NewGuid().ToString(), Name = "Mixed Bouquet", Image = "mixed_bouquet.jpg", Description = "A mix of colorful flowers for a vibrant display.", Price = 39.99m, Quantity = 25, CategoryId = categories[1].Id },
-
-            // Wedding Flowers
-            new Product { Id = Guid.NewGuid().ToString(), Name = "Bridal Bouquet", Image = "bridal_bouquet.jpg", Description = "A stunning bouquet designed for the beautiful bride.", Price = 99.99m, Quantity = 10, CategoryId = categories[2].Id },
-            new Product { Id = Guid.NewGuid().ToString(), Name = "Wedding Centerpieces", Image = "wedding_centerpieces.jpg", Description = "Elegant centerpieces to adorn your tables.", Price = 120.99m, Quantity = 5, CategoryId = categories[2].Id },
-            new Product { Id = Guid.NewGuid().ToString(), Name = "Boutonnieres", Image = "boutonnieres.jpg", Description = "Charming boutonnieres for the groom and groomsmen.", Price = 14.99m, Quantity = 20, CategoryId = categories[2].Id },
-
-            // Indoor Plants
-            new Product { Id = Guid.NewGuid().ToString(), Name = "Fiddle Leaf Fig", Image = "fiddle_leaf_fig.jpg", Description = "A trendy and robust indoor plant.", Price = 89.99m, Quantity = 10, CategoryId = categories[3].Id },
-            new Product { Id = Guid.NewGuid().ToString(), Name = "Snake Plant", Image = "snake_plant.jpg", Description = "An easy-to-care-for plant for indoor air purification.", Price = 39.99m, Quantity = 20, CategoryId = categories[3].Id },
-            new Product { Id = Guid.NewGuid().ToString(), Name = "Pothos", Image = "pothos.jpg", Description = "A versatile and low-maintenance indoor plant.", Price = 29.99m, Quantity = 30, CategoryId = categories[3].Id },
-
-            // Flower Decorations
-            new Product { Id = Guid.NewGuid().ToString(), Name = "Floral Candle Rings", Image = "floral_candle_rings.jpg", Description = "Add a floral touch to your candlelit evenings.", Price = 14.99m, Quantity = 40, CategoryId = categories[4].Id },
-            new Product { Id = Guid.NewGuid().ToString(), Name = "Flower Wall Decor", Image = "flower_wall_decor.jpg", Description = "Beautiful wall decor to enhance any room.", Price = 75.99m, Quantity = 15, CategoryId = categories[4].Id },
-            new Product { Id = Guid.NewGuid().ToString(), Name = "Floral Wreath", Image = "floral_wreath.jpg", Description = "A charming wreath to adorn your door.", Price = 49.99m, Quantity = 20, CategoryId = categories[4].Id },
-        };
-
-        #endregion
-
         #region Relationship IdentityUser
         modelBuilder.Entity<IdentityUser>(entity =>
         {
@@ -168,7 +127,6 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
                     .WithOne(p => p.Category) // Each Product has one Category
                         .HasForeignKey(p => p.CategoryId) // ForeignKey in Product pointing to Category
                             .IsRequired(false); // Make the relationship optional (nullable)
-            entity.HasData(categories);
         });
         #endregion
 
@@ -186,7 +144,6 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
                     .WithOne(od => od.ProductInOrder) // Each OrderDetail has one Product
                         .HasForeignKey(od => od.ProductId) // ForeignKey in OrderDetail pointing to Product
                             .IsRequired(false); // Make the relationship optional (nullable)
-            entity.HasData(products);
         });
         #endregion
 

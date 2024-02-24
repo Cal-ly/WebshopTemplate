@@ -1,7 +1,11 @@
 ﻿My questions in bullet form:
 
+General:
+- [x] Using the AddSingleton to a service when it is implemented?
+- [x] How to use the `async` and `await` keywords in C# properly?
+
+Database related:
 - [x] Bidirectional relationships are nice / how to use it properly?
 - [x] Index in DB can optimize and slow down at the same time / how to use it properly?
-- [x] What is DBset and DBcontext and how are they different from each other?
 - [x] DBset and DBcontext are used to interact with the database, but how do you use them in the frontend?
 - [x] How do you handle the frontend when you have a many to many relationship?
