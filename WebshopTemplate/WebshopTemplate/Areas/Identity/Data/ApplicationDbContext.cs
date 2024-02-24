@@ -1,8 +1,3 @@
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using WebshopTemplate.Models;
-
 namespace WebshopTemplate.Data;
 
 public class ApplicationDbContext : IdentityDbContext<IdentityUser>
@@ -51,9 +46,11 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
                     .WithOne()
                         .HasForeignKey<Customer>(c => c.UserId); // One-to-One relationship between Customer and IdentityUser
 
+
             entity.HasOne(c => c.RepresentingCompany)
                     .WithMany(co => co.Representatives)
-                        .HasForeignKey(c => c.CompanyId);
+                        .HasForeignKey(c => c.CompanyId)
+                            .IsRequired(false); // Make the relationship optional (nullable)
             entity.Property(c => c.CompanyId)
                         .IsRequired(false);
             entity.Property(c => c.CompanyId)
@@ -70,11 +67,14 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             entity.Property(s => s.Id).ValueGeneratedOnAdd();
             entity.Property(s => s.EmploymentDate).HasDefaultValueSql("GETDATE()"); // Default value for EmploymentDate
             entity.HasIndex(s => s.Id);
-            entity.HasOne(s => s.User).WithOne().HasForeignKey<Staff>(s => s.UserId); // One-to-One relationship between Staff and IdentityUser
+            entity.HasOne(s => s.User)
+                    .WithOne()
+                        .HasForeignKey<Staff>(s => s.UserId); // One-to-One relationship between Staff and IdentityUser
 
             entity.HasMany(s => s.Orders) // Staff has many Orders
                     .WithOne(o => o.Staff) // Each Order has one Staff
-                        .HasForeignKey(o => o.StaffId); // ForeignKey in Order pointing to Staff
+                        .HasForeignKey(o => o.StaffId) // ForeignKey in Order pointing to Staff
+                            .IsRequired(false); // Make the relationship optional (nullable)
         });
         #endregion
 
@@ -86,7 +86,8 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             entity.HasIndex(co => co.Id);
             entity.HasMany(co => co.Representatives) // Company has many Customers
                     .WithOne(c => c.RepresentingCompany) // Each Customer has one Company
-                        .HasForeignKey(c => c.CompanyId); // ForeignKey in Customer pointing to Company
+                        .HasForeignKey(c => c.CompanyId) // ForeignKey in Customer pointing to Company
+                            .IsRequired(false); // Make the relationship optional (nullable)
         });
         #endregion
 
@@ -98,7 +99,8 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             entity.HasIndex(o => o.Id); // Index on Id in Order
             entity.HasMany(o => o.OrderDetails) // Order has many OrderDetails
                     .WithOne(od => od.Order) // Each OrderDetail has one Order
-                        .HasForeignKey(od => od.OrderId); // ForeignKey in OrderDetail pointing to Order
+                        .HasForeignKey(od => od.OrderId) // ForeignKey in OrderDetail pointing to Order
+                            .IsRequired(false); // Make the relationship optional (nullable)
         });
         #endregion
 
@@ -110,22 +112,8 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             entity.HasIndex(od => od.Id);
             entity.HasOne(od => od.ProductInOrder) // Each OrderDetail has one Product
                     .WithMany(p => p.OrderDetails) // Product has many OrderDetails
-                        .HasForeignKey(od => od.ProductId); // ForeignKey in OrderDetail pointing to Product
-        });
-        #endregion
-
-        #region Relationship Product - Category
-        modelBuilder.Entity<Product>(entity =>
-        {
-            entity.ToTable("Products");
-            entity.Property(p => p.Id).ValueGeneratedOnAdd();
-            entity.HasIndex(p => p.CategoryId); // Index on CategoryId in Product
-            entity.HasOne(p => p.Category) // Each Product has one Category
-                    .WithMany(c => c.Products) // Category has many Products
-                        .HasForeignKey(p => p.CategoryId); // ForeignKey in Product pointing to Category
-            //entity.HasMany(p => p.OrderDetails) // Product has many OrderDetails
-            //        .WithOne(od => od.ProductInOrder) // Each OrderDetail has one Product
-            //            .HasForeignKey(od => od.ProductId); // ForeignKey in OrderDetail pointing to Product
+                        .HasForeignKey(od => od.ProductId) // ForeignKey in OrderDetail pointing to Product
+                            .IsRequired(false); // Make the relationship optional (nullable)
         });
         #endregion
 
@@ -137,7 +125,25 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             entity.HasIndex(c => c.Id); // Index on Id in Category
             entity.HasMany(c => c.Products) // Category has many Products
                     .WithOne(p => p.Category) // Each Product has one Category
-                        .HasForeignKey(p => p.CategoryId); // ForeignKey in Product pointing to Category
+                        .HasForeignKey(p => p.CategoryId) // ForeignKey in Product pointing to Category
+                            .IsRequired(false); // Make the relationship optional (nullable)
+        });
+        #endregion
+
+        #region Relationship Product - Category
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.ToTable("Products");
+            entity.Property(p => p.Id).ValueGeneratedOnAdd();
+            entity.HasIndex(p => p.CategoryId); // Index on CategoryId in Product
+            entity.HasOne(p => p.Category) // Each Product has one Category
+                    .WithMany(c => c.Products) // Category has many Products
+                        .HasForeignKey(p => p.CategoryId) // ForeignKey in Product pointing to Category
+                            .IsRequired(false); // Make the relationship optional (nullable)
+            entity.HasMany(p => p.OrderDetails) // Product has many OrderDetails
+                    .WithOne(od => od.ProductInOrder) // Each OrderDetail has one Product
+                        .HasForeignKey(od => od.ProductId) // ForeignKey in OrderDetail pointing to Product
+                            .IsRequired(false); // Make the relationship optional (nullable)
         });
         #endregion
 
@@ -152,7 +158,8 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
                   .HasForeignKey<Basket>(b => b.CustomerId); // One-to-One relationship between Basket and Customer
             entity.HasMany(b => b.Items) // Basket has many BasketItems
                     .WithOne(bi => bi.Basket) // Each BasketItem has one Basket
-                        .HasForeignKey(bi => bi.BasketId); // ForeignKey in BasketItem pointing to Basket
+                        .HasForeignKey(bi => bi.BasketId) // ForeignKey in BasketItem pointing to Basket
+                            .IsRequired(false); // Make the relationship optional (nullable)
         });
         #endregion
 
@@ -162,7 +169,9 @@ public class ApplicationDbContext : IdentityDbContext<IdentityUser>
             entity.ToTable("BasketItems");
             entity.Property(bi => bi.Id).ValueGeneratedOnAdd();
             entity.HasIndex(bi => bi.Id); // Index on Id in BasketItem
-            entity.HasOne(bi => bi.ProductInBasket).WithOne().HasForeignKey<BasketItem>(bi => bi.ProductId); // Each BasketItem has one Product
+            entity.HasOne(bi => bi.ProductInBasket)
+                    .WithOne()
+                        .HasForeignKey<BasketItem>(bi => bi.ProductId); // Each BasketItem has one Product
         });
         #endregion
 

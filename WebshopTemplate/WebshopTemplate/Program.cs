@@ -29,6 +29,7 @@ global using WebshopTemplate.Interfaces;
 global using WebshopTemplate.Models;
 global using WebshopTemplate.Initializers;
 global using WebshopTemplate.Services;
+global using WebshopTemplate.Repositories;
 global using WebshopTemplate.Pages;
 
 namespace WebshopTemplate;
@@ -37,22 +38,29 @@ public static class Program
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        var services = builder.Services;
         var connectionString = builder.Configuration.GetConnectionString("ApplicationDbContextConnection") ?? throw new InvalidOperationException("Connection string 'ApplicationDbContextConnection' not found.");
 
-        builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+        services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 
-        builder.Services.AddDefaultIdentity<IdentityUser>()
+        services.AddDefaultIdentity<IdentityUser>()
             .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
-        //builder.Services.AddSingleton<IAnalyticsService, AnalyticsService>();
-        //builder.Services.AddSingleton<IBasketService, BasketService>();
-        //builder.Services.AddSingleton<IOrderService, OrderService>();
-        //builder.Services.AddSingleton<IProductService, ProductService>();
+        services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
 
-        builder.Services.Config();
-        builder.Services.AddControllersWithViews();
-        builder.Services.AddRazorPages();
+        services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IAnalyticsService, AnalyticsService>();
+
+        //services.AddTransient<IBasketService, BasketService>();
+
+        services.Config();
+
+        services.AddHttpContextAccessor();
+        services.AddControllersWithViews();
+        services.AddRazorPages();
 
         var app = builder.Build();
 
@@ -75,15 +83,13 @@ public static class Program
         app.UseAuthorization();
         app.MapRazorPages();
 
-        //using var scope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
-        //var services = scope.ServiceProvider;
-        var services = app.Services.GetRequiredService<IServiceProvider>().CreateScope().ServiceProvider;
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        await context.Database.EnsureDeletedAsync();
-        await context.Database.EnsureCreatedAsync();
-        await RoleInitializer.SeedRoles(services);
-        await AdminInitializer.SeedAdmin(services);
-        await Initializer.GodSeedDatabase(services);
+        var scopedServices = app.Services.GetRequiredService<IServiceProvider>().CreateScope().ServiceProvider;
+        var context = scopedServices.GetRequiredService<ApplicationDbContext>();
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
+
+        var initializer = new Initializer();
+        await initializer.Initialize(scopedServices, context);
 
         app.Run();
     }

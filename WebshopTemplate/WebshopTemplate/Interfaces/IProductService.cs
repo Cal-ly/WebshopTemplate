@@ -2,10 +2,10 @@
 {
     public interface IProductService
     {
-        Task<Product?> CreateProductAsync(Product product);
-        Task<List<Product>> GetAllProductsAsync();
-        Task<Product?> GetProductByIdAsync(string productId);
-        Task<Product?> UpdateProductAsync(Product product);
-        Task<Product?> DeleteProductAsync(string productId);
+        public Task<Product?> AddAsync(Product product);
+        public Task<List<Product>?> GetAllAsync();
+        public Task<Product?> UpdateAsync(Product product);
+        public Task<Product?> DeleteAsync(string productId);
+        public Task<Product?> GetProductByIdAsync(string productId);
     }
 }

@@ -2,36 +2,30 @@
 {
     public class ProductService : IProductService
     {
-        private readonly IProductRepository _productRepository;
-
+        private readonly IProductRepository productRepository;
         public ProductService(IProductRepository productRepository)
         {
-            _productRepository = productRepository;
+            this.productRepository = productRepository;
         }
-
-        public async Task<Product?> CreateProductAsync(Product product)
+        public async Task<Product?> AddAsync(Product product)
         {
-            return await _productRepository.Add(product);
+            return await productRepository.Add(product);
         }
-
-        public async Task<List<Product>> GetAllProductsAsync()
+        public async Task<List<Product>?> GetAllAsync()
         {
-            return await _productRepository.GetAllAsync();
+            return await productRepository.GetAllAsync();
         }
-
+        public async Task<Product?> UpdateAsync(Product product)
+        {
+            return await productRepository.UpdateAsync(product);
+        }
+        public async Task<Product?> DeleteAsync(string productId)
+        {
+            return await productRepository.DeleteAsync(productId);
+        }
         public async Task<Product?> GetProductByIdAsync(string productId)
         {
-            return await _productRepository.Get(productId);
-        }
-
-        public async Task<Product?> UpdateProductAsync(Product product)
-        {
-            return await _productRepository.UpdateProductAsync(product);
-        }
-
-        public async Task<Product?> DeleteProductAsync(string productId)
-        {
-            return await _productRepository.DeleteProductAsync(productId);
+            return await productRepository.Get(productId);
         }
     }
 }

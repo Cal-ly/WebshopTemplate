@@ -1,45 +1,46 @@
 ﻿namespace WebshopTemplate.Repositories
 {
-    public class ProductRepository
+    public class ProductRepository : IProductRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext context;
         public ProductRepository(ApplicationDbContext context)
         {
-            _context = context;
+            this.context = context;
         }
-
-        public async Task Add(Product product)
+        public async Task<Product?> Add(Product product)
         {
-            await _context.Products.AddAsync(product);
-            await _context.SaveChangesAsync();
+            await context.Products.AddAsync(product);
+            await context.SaveChangesAsync();
+            return product;
         }
         public async Task<Product?> Get(string id)
         {
-            return await _context.Products.FindAsync(id);
+            return await context.Products.FindAsync(id);
         }
-        public async Task<List<Product>> GetAllAsync()
+        public async Task<List<Product>?> GetAllAsync()
         {
-            return await _context.Products.AsNoTracking().ToListAsync();
+
+            return await context.Products.AsNoTracking().ToListAsync();
         }
-        public async Task<Product> Update(Product product)
+        public async Task<Product?> UpdateAsync(Product product)
         {
-            _context.Products.Update(product);
-            await _context.SaveChangesAsync();
+            context.Products.Update(product);
+            await context.SaveChangesAsync();
             return product;
         }
-        public async Task<Product?> Delete(string id)
+        public async Task<Product?> DeleteAsync(string id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var product = await context.Products.FindAsync(id);
             if (product != null)
             {
-                _context.Products.Remove(product);
-                await _context.SaveChangesAsync();
+                context.Products.Remove(product);
+                await context.SaveChangesAsync();
             }
             return product == null ? product : throw new Exception("Product not found.");
         }
-        public async Task<List<Product>> GetProductsByCategoryIdAsync(string categoryId)
+        public async Task<List<Product>?> GetByCategoryIdAsync(string categoryId)
         {
-            return await _context.Products
+            return await context.Products
                 .Where(p => p.CategoryId == categoryId)
                 .AsNoTracking()
                 .ToListAsync();

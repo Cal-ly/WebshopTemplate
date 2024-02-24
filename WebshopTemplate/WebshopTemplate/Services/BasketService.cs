@@ -4,16 +4,16 @@ namespace WebshopTemplate.Services
 {
     public class BasketService : IBasketService
     {
-        private readonly IProductService _productService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IProductService productService;
+        private readonly IHttpContextAccessor httpContextAccessor;
 
         public BasketService(IProductService productService, IHttpContextAccessor httpContextAccessor)
         {
-            _productService = productService ?? throw new ArgumentNullException(nameof(productService));
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            this.productService = productService ?? throw new ArgumentNullException(nameof(productService));
+            this.httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
-        private ISession Session => _httpContextAccessor.HttpContext!.Session;
+        private ISession Session => httpContextAccessor.HttpContext!.Session;
         private string GetBasketId() => Session.GetString("BasketId") ?? Guid.NewGuid().ToString();
 
         public async Task<Basket> GetBasketAsync()
@@ -31,10 +31,10 @@ namespace WebshopTemplate.Services
         public async Task AddBasketItemAsync(string productId, int quantity)
         {
             var basket = await GetBasketAsync();
-            var product = await _productService.GetProductByIdAsync(productId);
+            var product = await productService.GetProductByIdAsync(productId);
             if (product == null) throw new InvalidOperationException("Product not found");
 
-            var basketItem = basket.Items.FirstOrDefault(i => i.ProductId == productId);
+            var basketItem = basket.Items.Find(i => i.ProductId == productId);
             if (basketItem != null)
             {
                 basketItem.Quantity += quantity;
@@ -49,7 +49,7 @@ namespace WebshopTemplate.Services
         public async Task RemoveBasketItemAsync(string productId)
         {
             var basket = await GetBasketAsync();
-            var basketItem = basket.Items.FirstOrDefault(i => i.ProductId == productId);
+            var basketItem = basket.Items.Find(i => i.ProductId == productId);
             if (basketItem != null)
             {
                 if (basketItem.Quantity > 1)
@@ -83,33 +83,6 @@ namespace WebshopTemplate.Services
                 Session.SetBasket(basket.Id, basket);
             }
         }
-
-        //public async Task CreateOrderFromBasket()
-        //{
-        //    var basket = await GetBasketAsync();
-        //    var order = new Order
-        //    {
-        //        CustomerId = basket.CustomerId,
-        //        OrderDate = DateTime.UtcNow,
-        //        Status = OrderStatus.Submitted, // Set initial order status
-        //        OrderDetails = new List<OrderDetail>(),
-        //    };
-        //
-        //    foreach (var item in basket.Items)
-        //    {
-        //        order.OrderDetails.Add(new OrderDetail
-        //        {
-        //            ProductId = item.ProductId,
-        //            Quantity = item.Quantity,
-        //            Price = item.ProductInBasket.Price,
-        //        });
-        //    }
-        //
-        //    // Calculate the total price of the order if needed or perform additional processing
-        //    _context.Orders.Add(order);
-        //    await _context.SaveChangesAsync();
-        //}
-
         public async Task ClearBasketAsync()
         {
             var basketId = GetBasketId();
