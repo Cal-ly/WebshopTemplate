@@ -1,1 +1,18 @@
-﻿
+﻿```csharp
+/// <summary>
+/// Calculates the sum of two integers.
+/// </summary>
+/// <param name="a">The first integer.</param>
+/// <param name="b">The second integer.</param>
+/// <returns>The sum of the two integers.</returns>
+/// <example>
+/// <code>
+/// int result = Add(5, 3);
+/// Console.WriteLine(result); // Output: 8
+/// </code>
+/// </example>
+public int Add(int a, int b)
+{
+    return a + b;
+}
+```
